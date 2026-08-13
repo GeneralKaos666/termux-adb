@@ -26,57 +26,57 @@ info "termux-adb installer v${VERSION} (self-contained)"
 echo
 
 # 1. Arch check
-step "Verificando arquitetura..."
+step "Checking architecture..."
 ARCH="$(uname -m)"
 case "$ARCH" in
   aarch64) DEB_ARCH="aarch64" ;;
   armv7l|armv8l|arm) DEB_ARCH="arm" ;;
   *)
-    fail "Arquitetura '$ARCH' nao suportada. Suportadas: aarch64, arm (armv7l/armv8l)"
+    fail "Architecture '$ARCH' not supported. Supported: aarch64, arm (armv7l/armv8l)"
     ;;
 esac
-info "Arquitetura: $ARCH → pacote $DEB_ARCH"
+info "Architecture: $ARCH → package $DEB_ARCH"
 
-# 2. Dependencias base
-step "Instalando dependencias base..."
+# 2. Base dependencies
+step "Installing base dependencies..."
 apt-get update -qq
 apt-get --assume-yes install wget > /dev/null
 
 # 3. termux-api
-step "Verificando termux-api..."
+step "Checking termux-api..."
 if ! command -v termux-usb >/dev/null 2>&1; then
-  warn "termux-usb nao encontrado. Instalando termux-api..."
+  warn "termux-usb not found. Installing termux-api..."
   apt-get --assume-yes install termux-api > /dev/null
-  info "termux-api instalado. Instale tambem o app Termux:API (F-Droid) se ainda nao instalou."
+  info "termux-api installed. Also install the Termux:API app (F-Droid) if you haven't already."
 else
-  info "termux-api presente"
+  info "termux-api present"
 fi
 
-# 4. Baixar e instalar o .deb direto do nosso repo (sem depender de repo externo)
+# 4. Download and install the .deb directly from our repo (no external repo dependency)
 DEB_FILE="termux-adb_${PKG_VERSION}_${DEB_ARCH}.deb"
 DEB_TMP="$(mktemp)"
 EXPECTED_SHA="${DEB_SHA256[$DEB_ARCH]}"
 
-step "Baixando $DEB_FILE..."
+step "Downloading $DEB_FILE..."
 if ! wget -qO "$DEB_TMP" --timeout=30 "${RELEASE_URL}/${DEB_FILE}" 2>/dev/null; then
   rm -f "$DEB_TMP"
-  fail "Falha ao baixar $DEB_FILE. Verifique conexao ou abra issue em github.com/rianprei/termux-adb"
+  fail "Failed to download $DEB_FILE. Check your connection or open an issue at github.com/rianprei/termux-adb"
 fi
 
-step "Verificando integridade (SHA256)..."
+step "Verifying integrity (SHA256)..."
 ACTUAL_SHA="$(sha256sum "$DEB_TMP" | cut -d' ' -f1)"
 if [ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]; then
   rm -f "$DEB_TMP"
-  fail "SHA256 nao confere! Esperado: $EXPECTED_SHA / Recebido: $ACTUAL_SHA. Possivel corrupcao. Abra issue em github.com/rianprei/termux-adb"
+  fail "SHA256 mismatch! Expected: $EXPECTED_SHA / Got: $ACTUAL_SHA. Possible corruption. Open an issue at github.com/rianprei/termux-adb"
 fi
-info "Integridade verificada"
+info "Integrity verified"
 
-step "Instalando termux-adb..."
+step "Installing termux-adb..."
 dpkg -i "$DEB_TMP" 2>/dev/null || apt-get --assume-yes -f install > /dev/null
 rm -f "$DEB_TMP"
 
-# 5. Isolar dados do adb
-step "Isolando dados do adb..."
+# 5. Isolate adb data
+step "Isolating adb data..."
 mkdir -p "$HOME/.termux-adb"
 for RC in "$HOME/.bashrc" "$HOME/.zshrc"; do
   [ -f "$RC" ] || continue
@@ -87,37 +87,37 @@ for RC in "$HOME/.bashrc" "$HOME/.zshrc"; do
 done
 export ANDROID_USER_HOME="$HOME/.termux-adb"
 export ANDROID_SDK_HOME="$HOME/.termux-adb"
-info "Dados do adb isolados em ~/.termux-adb"
+info "adb data isolated in ~/.termux-adb"
 
-# 6. Ferramentas extras
-step "Instalando ferramentas extras..."
-wget -qO "$PREFIX/bin/wireless-adb" --timeout=10 "${RAW_URL}/wireless-adb.sh" 2>/dev/null && chmod +x "$PREFIX/bin/wireless-adb" && info "wireless-adb instalado" || warn "Falha ao baixar wireless-adb (nao-critico)"
-wget -qO "$PREFIX/bin/termux-adb-doctor" --timeout=10 "${RAW_URL}/termux-adb-doctor.sh" 2>/dev/null && chmod +x "$PREFIX/bin/termux-adb-doctor" && info "termux-adb-doctor instalado" || warn "Falha ao baixar termux-adb-doctor (nao-critico)"
-wget -qO "$PREFIX/bin/termux-adb-update" --timeout=10 "${RAW_URL}/termux-adb-update.sh" 2>/dev/null && chmod +x "$PREFIX/bin/termux-adb-update" && info "termux-adb-update instalado" || warn "Falha ao baixar termux-adb-update (nao-critico)"
+# 6. Extra tools
+step "Installing extra tools..."
+wget -qO "$PREFIX/bin/wireless-adb" --timeout=10 "${RAW_URL}/wireless-adb.sh" 2>/dev/null && chmod +x "$PREFIX/bin/wireless-adb" && info "wireless-adb installed" || warn "Failed to download wireless-adb (non-critical)"
+wget -qO "$PREFIX/bin/termux-adb-doctor" --timeout=10 "${RAW_URL}/termux-adb-doctor.sh" 2>/dev/null && chmod +x "$PREFIX/bin/termux-adb-doctor" && info "termux-adb-doctor installed" || warn "Failed to download termux-adb-doctor (non-critical)"
+wget -qO "$PREFIX/bin/termux-adb-update" --timeout=10 "${RAW_URL}/termux-adb-update.sh" 2>/dev/null && chmod +x "$PREFIX/bin/termux-adb-update" && info "termux-adb-update installed" || warn "Failed to download termux-adb-update (non-critical)"
 
 # 7. Symlinks adb -> termux-adb, fastboot -> termux-fastboot
-step "Criando symlinks..."
+step "Creating symlinks..."
 ln -sf "$PREFIX/bin/termux-adb" "$PREFIX/bin/adb"
 ln -sf "$PREFIX/bin/termux-fastboot" "$PREFIX/bin/fastboot"
 info "adb -> termux-adb, fastboot -> termux-fastboot"
 
 # 8. Health-check
-step "Verificando instalacao..."
+step "Verifying installation..."
 echo
 if ADB_VER="$(termux-adb version 2>/dev/null | head -1)"; then
   info "termux-adb OK: $ADB_VER"
 else
-  warn "termux-adb instalado mas 'termux-adb version' falhou. Rode 'termux-adb-doctor' para diagnosticar."
+  warn "termux-adb installed but 'termux-adb version' failed. Run 'termux-adb-doctor' to diagnose."
 fi
 
 if FB_VER="$(termux-fastboot --version 2>/dev/null | head -1)"; then
   info "termux-fastboot OK: $FB_VER"
 else
-  warn "termux-fastboot nao respondeu (pode nao estar disponivel nesta versao)"
+  warn "termux-fastboot did not respond (may not be available in this version)"
 fi
 
 echo
-info "Instalacao completa!"
-info "Comandos: adb, fastboot, wireless-adb, termux-adb-doctor, termux-adb-update"
-info "Nenhuma dependencia externa — binarios hospedados no nosso repo."
+info "Installation complete!"
+info "Commands: adb, fastboot, wireless-adb, termux-adb-doctor, termux-adb-update"
+info "No external dependencies — binaries hosted in our repo."
 echo

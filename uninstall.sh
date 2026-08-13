@@ -13,34 +13,34 @@ echo
 info "termux-adb uninstaller v3.1.0"
 echo
 
-step "Removendo pacote termux-adb..."
+step "Removing termux-adb package..."
 apt-get --assume-yes remove termux-adb 2>/dev/null || true
 
-step "Limpando restos de apt (se existirem)..."
+step "Cleaning up leftover apt artifacts (if any)..."
 rm -f "$PREFIX/etc/apt/sources.list.d/termux-adb.list"
 rm -f "$PREFIX/etc/apt/trusted.gpg.d/nohajc.gpg"
 
-step "Removendo symlinks e ferramentas extras..."
+step "Removing symlinks and extra tools..."
 rm -f "$PREFIX/bin/adb"
 rm -f "$PREFIX/bin/fastboot"
 rm -f "$PREFIX/bin/wireless-adb"
 rm -f "$PREFIX/bin/termux-adb-doctor"
 rm -f "$PREFIX/bin/termux-adb-update"
 
-step "Limpando config dos shell RCs..."
+step "Cleaning shell RC config..."
 for RC in "$HOME/.bashrc" "$HOME/.zshrc"; do
   [ -f "$RC" ] || continue
   sed -i '/ANDROID_USER_HOME=.*\.termux-adb/d' "$RC"
   sed -i '/ANDROID_SDK_HOME=.*\.termux-adb/d' "$RC"
 done
 
-step "Removendo dados isolados..."
+step "Removing isolated data..."
 rm -rf "$HOME/.termux-adb"
 
 echo
 if command -v termux-adb >/dev/null 2>&1; then
-  echo -e "${RED}[!]${NC} termux-adb ainda no PATH — remocao pode ter falhado parcialmente"
+  echo -e "${RED}[!]${NC} termux-adb still on PATH — removal may have partially failed"
 else
-  info "termux-adb removido completamente"
+  info "termux-adb fully removed"
 fi
 echo

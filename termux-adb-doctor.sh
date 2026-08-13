@@ -17,77 +17,77 @@ echo "========================"
 echo
 
 # 1. termux-adb
-echo "Binarios:"
+echo "Binaries:"
 if command -v termux-adb >/dev/null 2>&1; then
   VER="$(termux-adb version 2>/dev/null | head -1 || echo '?')"
   ok "termux-adb: $VER"
 else
-  fail "termux-adb nao encontrado no PATH"
+  fail "termux-adb not found on PATH"
 fi
 
 if command -v termux-fastboot >/dev/null 2>&1; then
   VER="$(termux-fastboot --version 2>/dev/null | head -1 || echo '?')"
   ok "termux-fastboot: $VER"
 else
-  fail "termux-fastboot nao encontrado no PATH"
+  fail "termux-fastboot not found on PATH"
 fi
 echo
 
 # 2. termux-api
 echo "Termux:API:"
 if command -v termux-usb >/dev/null 2>&1; then
-  ok "termux-usb presente"
+  ok "termux-usb present"
 else
-  fail "termux-usb nao encontrado — instale termux-api (pkg install termux-api)"
+  fail "termux-usb not found — install termux-api (pkg install termux-api)"
 fi
 
 if termux-usb -l >/dev/null 2>&1; then
-  ok "app Termux:API funcional"
+  ok "Termux:API app functional"
 else
-  warn "termux-usb -l falhou — app Termux:API pode nao estar instalado (F-Droid)"
+  warn "termux-usb -l failed — the Termux:API app may not be installed (F-Droid)"
 fi
 echo
 
-# 3. Pacote dpkg
-echo "Pacote:"
+# 3. dpkg package
+echo "Package:"
 if dpkg -s termux-adb >/dev/null 2>&1; then
   PKG_VER="$(dpkg -s termux-adb 2>/dev/null | grep '^Version:' | cut -d' ' -f2)"
-  ok "termux-adb instalado via dpkg ($PKG_VER)"
+  ok "termux-adb installed via dpkg ($PKG_VER)"
 else
-  fail "pacote termux-adb nao instalado"
+  fail "termux-adb package not installed"
 fi
 
 if wget -q --spider --timeout=5 "https://api.github.com/repos/rianprei/termux-adb/releases/latest" 2>/dev/null; then
-  ok "GitHub Releases acessivel"
+  ok "GitHub Releases reachable"
 else
-  warn "GitHub Releases inacessivel (sem internet ou API rate limit)"
+  warn "GitHub Releases unreachable (no internet or API rate limit)"
 fi
 echo
 
-# 4. Config
-echo "Configuracao:"
+# 4. Configuration
+echo "Configuration:"
 if [ -n "$ANDROID_USER_HOME" ]; then
   ok "ANDROID_USER_HOME=$ANDROID_USER_HOME"
 elif [ -n "$ANDROID_SDK_HOME" ]; then
-  warn "ANDROID_SDK_HOME definido (deprecated) — rode install.sh para atualizar para ANDROID_USER_HOME"
+  warn "ANDROID_SDK_HOME set (deprecated) — run install.sh to upgrade to ANDROID_USER_HOME"
 else
-  warn "ANDROID_USER_HOME nao definido — dados do adb vao para \$HOME (rode install.sh para isolar)"
+  warn "ANDROID_USER_HOME not set — adb data will go to \$HOME (run install.sh to isolate)"
 fi
 
 if [ -d "$HOME/.termux-adb" ]; then
-  ok "diretorio ~/.termux-adb existe"
+  ok "~/.termux-adb directory exists"
 else
-  warn "~/.termux-adb nao existe (sera criado no primeiro uso do adb)"
+  warn "~/.termux-adb does not exist (it will be created on first adb use)"
 fi
 echo
 
-# 5. Ferramentas extras e symlinks
+# 5. Extra tools and symlinks
 echo "Extras:"
 for TOOL in wireless-adb termux-adb-update; do
   if command -v "$TOOL" >/dev/null 2>&1; then
-    ok "$TOOL instalado"
+    ok "$TOOL installed"
   else
-    warn "$TOOL nao instalado (rode install.sh para adicionar)"
+    warn "$TOOL not installed (run install.sh to add it)"
   fi
 done
 
@@ -96,21 +96,21 @@ echo "Symlinks:"
 if [ -L "$PREFIX/bin/adb" ] && [ "$(readlink "$PREFIX/bin/adb")" = "$PREFIX/bin/termux-adb" ]; then
   ok "adb -> termux-adb"
 else
-  warn "symlink adb nao encontrado (rode install.sh para criar)"
+  warn "adb symlink not found (run install.sh to create it)"
 fi
 
 if [ -L "$PREFIX/bin/fastboot" ] && [ "$(readlink "$PREFIX/bin/fastboot")" = "$PREFIX/bin/termux-fastboot" ]; then
   ok "fastboot -> termux-fastboot"
 else
-  warn "symlink fastboot nao encontrado (rode install.sh para criar)"
+  warn "fastboot symlink not found (run install.sh to create it)"
 fi
 echo
 
-# Resultado
+# Result
 echo "========================"
 if [ "$ISSUES" -eq 0 ]; then
-  echo -e "${GREEN}Tudo OK — nenhum problema encontrado.${NC}"
+  echo -e "${GREEN}All OK — no problems found.${NC}"
 else
-  echo -e "${RED}$ISSUES problema(s) encontrado(s).${NC}"
+  echo -e "${RED}$ISSUES problem(s) found.${NC}"
 fi
 echo

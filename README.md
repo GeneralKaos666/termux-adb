@@ -1,108 +1,108 @@
 # termux-adb
 
-ADB e Fastboot no Termux **sem root**. 100% self-contained, config isolada, verificação SHA256, wireless mode, diagnóstico integrado, auto-updater, uninstall limpo.
+ADB and Fastboot on Termux **without root**. 100% self-contained, isolated config, SHA256 verification, wireless mode, built-in diagnostics, auto-updater, clean uninstall.
 
-## Instalação
+## Installation
 
-Instale [Termux](https://f-droid.org/packages/com.termux/) e [Termux:API](https://f-droid.org/packages/com.termux.api/) pelo F-Droid, depois:
+Install [Termux](https://f-droid.org/packages/com.termux/) and [Termux:API](https://f-droid.org/packages/com.termux.api/) from F-Droid, then:
 
 ```
 curl -s https://raw.githubusercontent.com/rianprei/termux-adb/main/install.sh | bash
 ```
 
-O installer:
-- Bloqueia arquiteturas não suportadas
-- Instala `termux-api` automaticamente se faltar
-- Verifica integridade do .deb (SHA256) antes de instalar
-- Instala `termux-adb` e `termux-fastboot` via dpkg direto do nosso repo
-- Cria symlinks `adb` → `termux-adb` e `fastboot` → `termux-fastboot` (digita só `adb`)
-- Isola dados do adb em `~/.termux-adb` (não suja seu `$HOME`)
-- Instala `wireless-adb`, `termux-adb-doctor` e `termux-adb-update` no PATH
-- Roda health-check no final e confirma que tudo funciona
-- Para no primeiro erro (`set -e`)
+The installer:
+- Blocks unsupported architectures
+- Installs `termux-api` automatically if missing
+- Verifies the .deb integrity (SHA256) before installing
+- Installs `termux-adb` and `termux-fastboot` via dpkg directly from our repo
+- Creates `adb` → `termux-adb` and `fastboot` → `termux-fastboot` symlinks (just type `adb`)
+- Isolates adb data in `~/.termux-adb` (doesn't clutter your `$HOME`)
+- Installs `wireless-adb`, `termux-adb-doctor` and `termux-adb-update` on PATH
+- Runs a health-check at the end and confirms everything works
+- Stops on the first error (`set -e`)
 
-**100% self-contained** — binários hospedados no nosso repo (GitHub Releases), não depende de nenhum servidor externo.
+**100% self-contained** — binaries hosted in our repo (GitHub Releases), no dependency on any external server.
 
-## Uso
+## Usage
 
-### USB (cabo OTG)
+### USB (OTG cable)
 
 ```
 adb devices
 ```
 
-Na primeira vez o Android pede permissão USB — aceite.
+The first time, Android asks for USB permission — accept it.
 
-### Wireless (Android 11+, sem cabo)
+### Wireless (Android 11+, no cable)
 
 ```
 wireless-adb
 ```
 
-Guia interativo: detecta seu IP, valida endereços, timeout de 15s em cada passo.
+Interactive guide: detects your IP, validates addresses, 15s timeout on each step.
 
-### Diagnóstico
+### Diagnostics
 
 ```
 termux-adb-doctor
 ```
 
-Verifica tudo: binários, termux-api, app Termux:API, config isolada, ferramentas extras. Output verde/vermelho por item.
+Checks everything: binaries, termux-api, the Termux:API app, isolated config, extra tools. Green/red output per item.
 
-### Atualizar
+### Update
 
 ```
 termux-adb-update
 ```
 
-Verifica se há nova versão, atualiza scripts e pacote automaticamente.
+Checks for a new version and updates scripts and package automatically.
 
-## Desinstalar
+## Uninstall
 
 ```
 curl -s https://raw.githubusercontent.com/rianprei/termux-adb/main/uninstall.sh | bash
 ```
 
-Remove tudo: pacote, symlinks, ferramentas extras, config isolada, variáveis de ambiente dos shell RCs.
+Removes everything: package, symlinks, extra tools, isolated config, shell RC environment variables.
 
-## Como funciona
+## How it works
 
-O `termux-adb` usa a API `termux-usb` do Termux:API para obter file descriptors de dispositivos USB sem precisar de root. Os binários adb/fastboot são patchados para varrer dispositivos via `termux-usb` em vez de acessar `/dev/bus/usb` diretamente. Um Unix Domain Socket transfere os descriptors entre processos — funciona com múltiplos dispositivos (ex: hub USB no OTG).
+`termux-adb` uses the `termux-usb` API from Termux:API to obtain file descriptors of USB devices without needing root. The adb/fastboot binaries are patched to scan devices via `termux-usb` instead of accessing `/dev/bus/usb` directly. A Unix Domain Socket transfers the descriptors between processes — works with multiple devices (e.g. USB hub on OTG).
 
-## Comparação
+## Comparison
 
-| Feature | nohajc | MasterDevX | rendiix | **Este** |
+| Feature | nohajc | MasterDevX | rendiix | **This** |
 |---------|--------|-----------|---------|----------|
-| Sem root | ✅ | ❌ | ❌ | ✅ |
+| No root | ✅ | ❌ | ❌ | ✅ |
 | Auto-updates | ✅ | ❌ | ✅ | ✅ |
-| Uninstall limpo | ❌ | ✅ | ❌ | ✅ |
-| Config isolada | ❌ | ✅ | ❌ | ✅ |
+| Clean uninstall | ❌ | ✅ | ❌ | ✅ |
+| Isolated config | ❌ | ✅ | ❌ | ✅ |
 | Wireless ADB | ❌ | ❌ | ❌ | ✅ |
-| Diagnóstico (doctor) | ❌ | ❌ | ❌ | ✅ |
+| Diagnostics (doctor) | ❌ | ❌ | ❌ | ✅ |
 | Auto-install termux-api | ❌ | ❌ | ❌ | ✅ |
-| Verificação de arquitetura | ❌ | ❌ | ❌ | ✅ |
-| Health-check pós-install | ❌ | ❌ | ❌ | ✅ |
+| Architecture check | ❌ | ❌ | ❌ | ✅ |
+| Post-install health-check | ❌ | ❌ | ❌ | ✅ |
 | SHA256 verify | ❌ | ❌ | ❌ | ✅ |
 | Fail-fast (set -e) | ❌ | ❌ | ❌ | ✅ |
-| Self-contained (sem deps externas) | ❌ | ✅ | ❌ | ✅ |
+| Self-contained (no external deps) | ❌ | ✅ | ❌ | ✅ |
 | Symlinks adb/fastboot | ❌ | ❌ | ❌ | ✅ |
 | Auto-updater | ❌ | ❌ | ❌ | ✅ |
 
-## Limitações
+## Limitations
 
-Consultar serial via `libusb`/`termux-usb` é lento. Não afeta adb (daemon, varre periodicamente), mas é perceptível no fastboot (sem serviço em background).
+Querying the serial via `libusb`/`termux-usb` is slow. It doesn't affect adb (daemon, scans periodically), but is noticeable in fastboot (no background service).
 
-## Créditos
+## Credits
 
-Projeto independente que reúne as melhores ideias do ecossistema:
+Independent project combining the best ideas from the ecosystem:
 
-- **[nohajc/termux-adb](https://github.com/nohajc/termux-adb)** — patch adb/fastboot + `termux-usb` sem root, distribuído via apt repo próprio
-- **[MasterDevX/Termux-ADB](https://github.com/MasterDevX/Termux-ADB)** — conceito de isolamento de dados do adb fora do `$HOME`
-- **[rendiix/termux-adb-fastboot](https://github.com/rendiix/termux-adb-fastboot)** — validou padrão de distribuição via apt repo + GPG key
-- **[offici5l/termux-adb-fastboot](https://github.com/offici5l/termux-adb-fastboot)** — symlinks `adb`→`termux-adb` e conceito de auto-updater
+- **[nohajc/termux-adb](https://github.com/nohajc/termux-adb)** — adb/fastboot patch + `termux-usb` without root, distributed via its own apt repo
+- **[MasterDevX/Termux-ADB](https://github.com/MasterDevX/Termux-ADB)** — concept of isolating adb data outside `$HOME`
+- **[rendiix/termux-adb-fastboot](https://github.com/rendiix/termux-adb-fastboot)** — validated the distribution pattern via apt repo + GPG key
+- **[offici5l/termux-adb-fastboot](https://github.com/offici5l/termux-adb-fastboot)** — `adb`→`termux-adb` symlinks and auto-updater concept
 
-Ver [NOTICE.md](NOTICE.md) para detalhes de atribuição.
+See [NOTICE.md](NOTICE.md) for attribution details.
 
-## Licença
+## License
 
 [MIT](LICENSE)
