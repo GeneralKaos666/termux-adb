@@ -14,8 +14,8 @@ step()  { echo -e "${BLUE}[>]${NC} $1"; }
 
 VERSION="3.0.0"
 PKG_VERSION="0.2.3"
-RELEASE_URL="https://github.com/rianprei/termux-adb/releases/download/v${VERSION}"
-RAW_URL="https://raw.githubusercontent.com/rianprei/termux-adb/main"
+RELEASE_URL="https://github.com/GeneralKaos666/termux-adb/releases/download/v${VERSION}"
+RAW_URL="https://raw.githubusercontent.com/GeneralKaos666/termux-adb/main"
 
 declare -A DEB_SHA256
 DEB_SHA256[aarch64]="3f571ada3ea25671ab8a6d227c5f12f7e0412d8b62bf60e7948ae99a4c38c518"
@@ -60,14 +60,14 @@ EXPECTED_SHA="${DEB_SHA256[$DEB_ARCH]}"
 step "Downloading $DEB_FILE..."
 if ! wget -qO "$DEB_TMP" --timeout=30 "${RELEASE_URL}/${DEB_FILE}" 2>/dev/null; then
   rm -f "$DEB_TMP"
-  fail "Failed to download $DEB_FILE. Check your connection or open an issue at github.com/rianprei/termux-adb"
+  fail "Failed to download $DEB_FILE. Check your connection or open an issue at github.com/GeneralKaos666/termux-adb"
 fi
 
 step "Verifying integrity (SHA256)..."
 ACTUAL_SHA="$(sha256sum "$DEB_TMP" | cut -d' ' -f1)"
 if [ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]; then
   rm -f "$DEB_TMP"
-  fail "SHA256 mismatch! Expected: $EXPECTED_SHA / Got: $ACTUAL_SHA. Possible corruption. Open an issue at github.com/rianprei/termux-adb"
+  fail "SHA256 mismatch! Expected: $EXPECTED_SHA / Got: $ACTUAL_SHA. Possible corruption. Open an issue at github.com/GeneralKaos666/termux-adb"
 fi
 info "Integrity verified"
 

@@ -7,7 +7,7 @@ ADB and Fastboot on Termux **without root**. 100% self-contained, isolated confi
 Install [Termux](https://f-droid.org/packages/com.termux/) and [Termux:API](https://f-droid.org/packages/com.termux.api/) from F-Droid, then:
 
 ```
-curl -s https://raw.githubusercontent.com/rianprei/termux-adb/main/install.sh | bash
+curl -s https://raw.githubusercontent.com/GeneralKaos666/termux-adb/main/install.sh | bash
 ```
 
 The installer:
@@ -60,7 +60,7 @@ Checks for a new version and updates scripts and package automatically.
 ## Uninstall
 
 ```
-curl -s https://raw.githubusercontent.com/rianprei/termux-adb/main/uninstall.sh | bash
+curl -s https://raw.githubusercontent.com/GeneralKaos666/termux-adb/main/uninstall.sh | bash
 ```
 
 Removes everything: package, symlinks, extra tools, isolated config, shell RC environment variables.
