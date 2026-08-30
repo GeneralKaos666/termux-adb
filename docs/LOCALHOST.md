@@ -1,40 +1,35 @@
-# Depuração do próprio aparelho (localhost)
+# Debugging this device (localhost)
 
-É possível conectar o ADB ao **próprio aparelho** (`127.0.0.1`), sem qualquer cabo.
-Esse procedimento é útil para:
+It is possible to connect ADB to **this device** (`127.0.0.1`), without any cable. This procedure is useful for:
 
-- Conceder permissões a aplicativos como Brevent, Ice Box e Shizuku;
-- Abrir um shell ADB local (`adb shell`);
-- Usar o scrcpy para espelhamento em um dispositivo remoto.
+- Granting permissions to apps such as Brevent, Ice Box and Shizuku;
+- Opening a local ADB shell (`adb shell`);
+- Using scrcpy to mirror to a remote device.
 
-## Pré-requisitos
+## Prerequisites
 
-- Android 11 ou superior;
-- Depuração wireless ativada (veja [USO_WIRELESS.md](USO_WIRELESS.md)).
+- Android 11 or higher;
+- Wireless debugging enabled (see [WIRELESS.md](WIRELESS.md)).
 
-## Procedimento assistido
+## Assisted procedure
 
 ```bash
 adblocalhost
 ```
 
-O script solicita a **porta de pareamento** (`Pair device with pairing code`) e o
-**código de 6 dígitos**; em seguida, a **porta de conexão** (`IP address & Port`,
-diferente da de pareamento).
+The script asks for the **pairing port** (`Pair device with pairing code`) and the **6-digit code**; then the **connection port** (`IP address & Port`, different from the pairing one).
 
-## Procedimento manual
+## Manual procedure
 
 ```bash
-adb pair 127.0.0.1:PORT_PAREAMENTO   # informar o código de 6 dígitos
-adb connect 127.0.0.1:PORT_CONEXAO
+adb pair 127.0.0.1:PAIRING_PORT   # enter the 6-digit code
+adb connect 127.0.0.1:CONNECTION_PORT
 adb devices
 ```
 
-O pareamento é único; nas conexões seguintes basta `adb connect`.
+The pairing is one-time; on the following connections just run `adb connect`.
 
-## Observações
+## Notes
 
-- Recomenda-se usar **split-screen** para manter o diálogo de pareamento visível
-  enquanto o código é digitado no Termux.
-- A sessão ADB depende do daemon ativo: se a depuração wireless for desligada, a
-  conexão cai.
+- **Split-screen** is recommended to keep the pairing dialog visible while typing the code in Termux.
+- The ADB session depends on the daemon being active: if wireless debugging is turned off, the connection drops.

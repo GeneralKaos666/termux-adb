@@ -1,9 +1,9 @@
 #!/data/data/com.termux/files/usr/bin/bash
 #
-# fastboot — front-end unificado do termux-fastboot
-# =================================================
-# Sem root, sem bootloader. Encaminha para o termux-fastboot,
-# que é a implementação compatível com OTG (termux-usb) no Termux.
+# fastboot — unified front-end for termux-fastboot
+# ================================================
+# No root, no bootloader. Forwards to termux-fastboot,
+# the OTG-compatible (termux-usb) implementation on Termux.
 
 set -uo pipefail
 

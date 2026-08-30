@@ -1,7 +1,7 @@
 #!/data/data/com.termux/files/usr/bin/bash
 #
-# adbs — status geral do sistema ADB (diagnóstico rápido).
-# Consolida wireless-adb-doctor + termux-adb-doctor em uma visão única.
+# adbs — overall status of the ADB system (quick diagnostics).
+# Consolidates wireless-adb-doctor + termux-adb-doctor into a single view.
 
 set -uo pipefail
 
@@ -16,7 +16,7 @@ PREFIX=${PREFIX:-/data/data/com.termux/files/usr}
 cat_tool() { timeout 3 "$1" version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+[^ ]*' | head -1; }
 
 echo
-echo -e "${BLUE}Termux ADB — Diagnóstico${NC}"
+echo -e "${BLUE}Termux ADB — Diagnostics${NC}"
 echo "================================="
 echo
 
@@ -24,18 +24,18 @@ echo "Backends:"
 for b in adb termux-adb; do
   if command -v "$b" >/dev/null 2>&1; then
     V="$(cat_tool "$b")"
-    ok "$b: ${V:-(versão ok)}"
+    ok "$b: ${V:-(version OK)}"
   else
-    fail "$b: ausente"
+    fail "$b: missing"
   fi
 done
 
-# termux-fastboot é lento na enumeração USB — checa apenas presença
+# termux-fastboot is slow on USB enumeration — only check presence.
 for b in fastboot termux-fastboot; do
   if command -v "$b" >/dev/null 2>&1; then
-    ok "$b: presente"
+    ok "$b: present"
   else
-    fail "$b: ausente"
+    fail "$b: missing"
   fi
 done
 echo
@@ -45,44 +45,44 @@ if command -v termux-usb >/dev/null 2>&1; then
   CACHE="$HOME/.termux-adb/otg.cache"
   if [ -f "$CACHE" ]; then
     if [ "$(cat "$CACHE" 2>/dev/null)" = "1" ]; then
-      ok "termux-usb: dispositivos OTG conectados"
+      ok "termux-usb: OTG devices connected"
     else
-      warn "termux-usb disponível — nenhum dispositivo OTG conectado"
+      warn "termux-usb available — no OTG device connected"
     fi
   else
     OUT="$(timeout 4 termux-usb -l 2>&1)"
     RC=$?
     if [ $RC -ne 0 ]; then
-      fail "termux-usb falhou (código $RC) — instale o app Termux:API via F-Droid"
+      fail "termux-usb failed (code $RC) — install the Termux:API app via F-Droid"
     elif [ "$OUT" = "[]" ]; then
-      warn "termux-usb disponível — nenhum dispositivo OTG conectado"
+      warn "termux-usb available — no OTG device connected"
     else
       ok "termux-usb: $(echo "$OUT" | tr -d '[]" ' | sed 's/,/, /g')"
     fi
   fi
 else
-  fail "termux-usb ausente (pkg install termux-api)"
+  fail "termux-usb missing (pkg install termux-api)"
 fi
 echo
 
-echo "Ambiente:"
+echo "Environment:"
 if [ -n "${ANDROID_USER_HOME:-}" ]; then
   ok "ANDROID_USER_HOME=$ANDROID_USER_HOME"
 else
-  warn "ANDROID_USER_HOME não definido"
+  warn "ANDROID_USER_HOME not set"
 fi
 if command -v scrcpy >/dev/null 2>&1; then
   ok "scrcpy: $(timeout 3 scrcpy --version 2>/dev/null | head -1)"
 else
-  warn "scrcpy não instalado (pkg install scrcpy)"
+  warn "scrcpy not installed (pkg install scrcpy)"
 fi
 if [ -x "$HOME/.local/bin/ADBash.sh" ]; then
-  ok "ADBash: presente"
+  ok "ADBash: present"
 else
-  warn "ADBash ausente"
+  warn "ADBash missing"
 fi
 echo
 
-echo "Dispositivos (adb devices):"
-timeout 5 adb devices 2>&1 || warn "adb devices demorou — execute 'adb kill-server' e tente novamente"
+echo "Devices (adb devices):"
+timeout 5 adb devices 2>&1 || warn "adb devices took too long — run 'adb kill-server' and try again"
 echo

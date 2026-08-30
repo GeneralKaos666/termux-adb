@@ -1,8 +1,8 @@
 #!/data/data/com.termux/files/usr/bin/bash
 #
-# adb-otg-watcher — mantém o cache OTG atualizado em segundo plano.
-# O front-end `adb` lê apenas o cache (latência ~1ms). Atualiza a cada 4s.
-# Uso: adb-otg-watcher [CACHE_FILE] [LOCK_FILE]
+# adb-otg-watcher — keeps the OTG cache up to date in the background.
+# The `adb` front-end only reads the cache (latency ~1ms). Updates every 4s.
+# Usage: adb-otg-watcher [CACHE_FILE] [LOCK_FILE]
 
 set -uo pipefail
 
@@ -13,7 +13,7 @@ LOCK="${2:-$HOME/.termux-adb/otg.lock}"
 
 mkdir -p "$(dirname "$CACHE")"
 
-# flock impede múltiplas instâncias (single-instance no kernel).
+# flock prevents multiple instances (single-instance at the kernel level).
 exec 9>"$LOCK"
 flock -n 9 || exit 0
 
