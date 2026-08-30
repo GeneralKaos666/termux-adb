@@ -25,6 +25,7 @@ This project integrates the main implementations of the Termux ADB ecosystem —
 - **Termux** and **Termux:API** — both from [F-Droid](https://f-droid.org/). **Do not** use the Play Store versions (they are outdated and incompatible).
 - **Android device with USB host support** — for the OTG mode. Alternatively, **Android 11+** to use wireless without a cable.
 - **~100 MB of free storage** for the binaries and dependencies.
+- **aarch64 (64-bit ARM) device** — prebuilt packages are provided only for `aarch64`. 32-bit ARM (`arm`/`armv7l`/`armv8l`) is **not** currently supported.
 
 ## Installation
 
@@ -36,7 +37,7 @@ curl -s https://raw.githubusercontent.com/GeneralKaos666/termux-adb/main/install
 
 The installer runs the following steps, in order:
 
-1. **Architecture check** — blocks unsupported architectures (supported: `aarch64`, `arm`/`armv7l`/`armv8l`).
+1. **Architecture check** — blocks unsupported architectures (supported: `aarch64` only).
 2. **Base dependencies** — installs `wget`.
 3. **termux-api** — installs automatically if `termux-usb` is not present.
 4. **Download and install the `.deb` package** (GitHub Releases) with **SHA256 verification** before installing via `dpkg`; the process stops at the first error (`set -e`).

@@ -19,8 +19,7 @@ RELEASE_URL="https://github.com/GeneralKaos666/termux-adb/releases/download/v${V
 RAW_URL="https://raw.githubusercontent.com/GeneralKaos666/termux-adb/main"
 
 declare -A DEB_SHA256
-DEB_SHA256[aarch64]="3f571ada3ea25671ab8a6d227c5f12f7e0412d8b62bf60e7948ae99a4c38c518"
-DEB_SHA256[arm]="faf1ec047fa69dbafc9550574bdf4c91bc7c12c5372684d6c5d9cbe384e861a0"
+DEB_SHA256[aarch64]="d1f2e59ea3a118114d55b5439931c93114831a0eabfcf3b2799e4c6c4ad5b847"
 
 # Scripts installed on PATH (the .sh prefix is removed)
 EXTRA_SCRIPTS="wireless-adb termux-adb-doctor termux-adb-update adbotg adbpair adbw adblocalhost adbs adbmenu"
@@ -36,9 +35,11 @@ step "Checking architecture..."
 ARCH="$(uname -m)"
 case "$ARCH" in
   aarch64) DEB_ARCH="aarch64" ;;
-  armv7l|armv8l|arm) DEB_ARCH="arm" ;;
+  armv7l|armv8l|arm)
+    fail "Architecture '$ARCH' is not supported yet: only aarch64 (64-bit ARM) builds are provided. 32-bit ARM (arm/armv7l) packages are not currently published."
+    ;;
   *)
-    fail "Architecture '$ARCH' is not supported. Supported: aarch64, arm (armv7l/armv8l)"
+    fail "Architecture '$ARCH' is not supported. Supported: aarch64"
     ;;
 esac
 info "Architecture: $ARCH → package $DEB_ARCH"
