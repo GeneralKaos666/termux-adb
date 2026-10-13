@@ -12,17 +12,17 @@ step()  { echo -e "${BLUE}[>]${NC} $1"; }
 PREFIX="${PREFIX:-/data/data/com.termux/files/usr}"
 
 echo
-info "Termux ADB Unificado — desinstalador v4.0.0"
+info "Termux ADB Unified — uninstaller v4.0.0"
 echo
 
-step "Removendo pacote termux-adb..."
+step "Removing termux-adb package..."
 apt-get --assume-yes remove termux-adb 2>/dev/null || true
 
-step "Limpando restos de apt (se existirem)..."
+step "Cleaning up leftover apt artifacts (if any)..."
 rm -f "$PREFIX/etc/apt/sources.list.d/termux-adb.list"
 rm -f "$PREFIX/etc/apt/trusted.gpg.d/nohajc.gpg"
 
-step "Removendo ferramentas extras..."
+step "Removing extra tools..."
 rm -f "$PREFIX/bin/wireless-adb"
 rm -f "$PREFIX/bin/termux-adb-doctor"
 rm -f "$PREFIX/bin/termux-adb-update"
@@ -33,27 +33,27 @@ rm -f "$PREFIX/bin/adblocalhost"
 rm -f "$PREFIX/bin/adbs"
 rm -f "$PREFIX/bin/adbmenu"
 
-step "Removendo front-ends unificados e watcher..."
+step "Removing unified front-ends and watcher..."
 rm -f "$HOME/.local/bin/adb"
 rm -f "$HOME/.local/bin/fastboot"
 rm -f "$HOME/.local/bin/adb-otg-watcher"
 rm -f "$PREFIX/bin/adb.sh"
 rm -f "$PREFIX/bin/fastboot.sh"
 
-step "Limpando config dos shell RCs..."
+step "Cleaning shell RC config..."
 for RC in "$HOME/.bashrc" "$HOME/.zshrc"; do
   [ -f "$RC" ] || continue
   sed -i '/ANDROID_USER_HOME=.*\.termux-adb/d' "$RC"
   sed -i '/ANDROID_SDK_HOME=.*\.termux-adb/d' "$RC"
 done
 
-step "Removendo dados isolados..."
+step "Removing isolated data..."
 rm -rf "$HOME/.termux-adb"
 
 echo
 if command -v termux-adb >/dev/null 2>&1 && [ ! -f "$HOME/.local/bin/adb" ]; then
-  echo -e "${RED}[!]${NC} termux-adb ainda está no PATH — a remoção pode ter falhado parcialmente"
+  echo -e "${RED}[!]${NC} termux-adb is still on PATH — removal may have partially failed"
 else
-  info "termux-adb e ferramentas associadas removidos"
+  info "termux-adb and associated tools removed"
 fi
 echo

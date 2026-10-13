@@ -1,83 +1,73 @@
-# Solução de problemas
+# Troubleshooting
 
-Guia de referência para os erros mais comuns.
+Reference guide for the most common errors.
 
 ## `ERROR IN RESULTRETURNER` (Termux:API)
 
-**Causa:** o app Android **Termux:API** (`com.termux.api`) não responde corretamente.
-Isso costuma acontecer quando o app é instalado pela **Play Store** (versão
-desatualizada/incompatível) ou quando a versão do pacote `termux-api` do Termux diverge
-da versão do app.
+**Cause:** the **Termux:API** Android app (`com.termux.api`) does not respond correctly. This usually happens when the app is installed from the **Play Store** (outdated/incompatible version) or when the `termux-api` package version diverges from the app version.
 
-**Verificação:**
+**Check:**
 ```bash
-termux-usb -l          # deve retornar [] ou uma lista JSON
-termux-battery-status  # deve retornar um JSON com dados
+termux-usb -l          # should return [] or a JSON list
+termux-battery-status  # should return JSON data
 ```
 
-**Correção:**
+**Fix:**
 ```bash
 pkg reinstall termux-api
 ```
-- **Desinstale** o Termux:API instalado pela Play Store;
-- **Instale** a versão do [F-Droid](https://f-droid.org/packages/com.termux.api/).
+- **Uninstall** the Termux:API installed from the Play Store;
+- **Install** the version from [F-Droid](https://f-droid.org/packages/com.termux.api/).
 
-Após reinstalar, reinicie o Termux e teste novamente `termux-usb -l`.
+After reinstalling, restart Termux and test `termux-usb -l` again.
 
 ## `no devices/emulators found`
 
-- Verifique se a **depuração USB/wireless** está ativa no aparelho alvo;
-- Confirme o cabeamento OTG/cabo;
-- Execute:
+- Check that **USB/wireless debugging** is enabled on the target device;
+- Confirm the OTG/cable wiring;
+- Run:
   ```bash
   adb kill-server && adb start-server
   adb devices
   ```
 
-## Dispositivo parece `offline`
+## Device appears `offline`
 
-- O aparelho alvo não aceitou o prompt RSA de autorização. Replugue, aceite o prompt e
-  repita.
-- No modo wireless, execute `adb kill-server` e reconecte.
+- The target device did not accept the RSA authorization prompt. Replug, accept the prompt and repeat.
+- In wireless mode, run `adb kill-server` and reconnect.
 
 ## `failed to connect` / `connection refused` (wireless)
 
-- A porta utilizada está errada; consulte a tela de "Depuração wireless" (a porta de
-  conectção difere da de pareamento e muda a cada reinício).
-- Mesma rede Wi-Fi obrigatória (sem isolamento de cliente).
-- Reative o toggle de depuração wireless se a porta estiver em uso.
+- The port used is wrong; check the "Wireless debugging" screen (the connection port differs from the pairing port and changes on every reboot).
+- Same Wi-Fi network required (no client isolation).
+- Toggle wireless debugging off and on if the port is in use.
 
 ## `error: protocol fault (couldn't read status message)`
 
-- Reinicie a depuração wireless no aparelho alvo;
-- Como fallback, conecte via USB e execute `adb tcpip 5555`, depois `adb connect`.
+- Restart wireless debugging on the target device;
+- As a fallback, connect via USB and run `adb tcpip 5555`, then `adb connect`.
 
-## Código de pareamento inválido
+## Invalid pairing code
 
-Gere um novo código no menu "Pair device with pairing code" do aparelho alvo e repita
-o pareamento.
+Generate a new code in the "Pair device with pairing code" menu on the target device and repeat the pairing.
 
-## Pareamento com timeout
+## Pairing timeout
 
-- Use **split-screen** para manter o diálogo de pareamento visível enquanto digita o
-  código;
-- Verifique o formato `IP:PORTA` (sem protocolo `http://`).
+- Use **split-screen** to keep the pairing dialog visible while typing the code;
+- Check the `IP:PORT` format (no `http://` prefix).
 
-## `termux-adb` não encontrado no PATH
+## `termux-adb` not found on PATH
 
-Reexecute o instalador:
+Re-run the installer:
 ```bash
-curl -s https://raw.githubusercontent.com/rianprei/termux-adb/main/install.sh | bash
+curl -s https://raw.githubusercontent.com/GeneralKaos666/termux-adb/main/install.sh | bash
 ```
-Ou consulte o [doctor](INSTALACAO.md): `termux-adb-doctor`.
+Or run the doctor (see [INSTALLATION.md](INSTALLATION.md)): `termux-adb-doctor`.
 
-## Fastboot muito lento
+## Fastboot very slow
 
-A enumeração de serial via `termux-usb`/libusb é lenta por construção. O `adb` reduz
-o impacto por rodar como daemon; o `fastboot` não tem daemon, então cada comando sofre
-o atraso. Seja paciente ou planeje os timeouts.
+Serial enumeration via `termux-usb`/libusb is slow by design. `adb` reduces the impact by running as a daemon; `fastboot` has no daemon, so every command suffers the delay. Be patient or plan the timeouts.
 
-## Permissões do app Termux:API
+## Termux:API app permissions
 
-Comandos que acessam SMS, localização, contatos etc. exigem permissões no Android.
-Conceda-as em `Ajustes > Aplicativos > Termux:API > Permissões`.
+Commands that access SMS, location, contacts, etc. require Android permissions. Grant them under `Settings > Apps > Termux:API > Permissions`.

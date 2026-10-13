@@ -1,61 +1,70 @@
 #!/data/data/com.termux/files/usr/bin/bash
 #
-# adbw-sweep — descoberta de porta dinâmica ADB wireless sem root (item 5 da §12.5)
+# adbw-sweep — wireless ADB dynamic port discovery without root (item 5 of §12.5)
 #
-# Substitui o `adb mdns services`, que NÃO existe no binário android-tools do
-# Termux (build nmeum compila com ANDROID_TOOLS_ADB_ENABLE_MDNS=OFF — §12.1 do
-# research). Varre o range efêmero TLS 32768-60999 com nmap e tenta adb connect
-# em cada porta aberta até virar transporte "device".
+# Replaces `adb mdns services`, which does NOT exist in the Termux android-tools
+# binary (the nmeum build compiles with ANDROID_TOOLS_ADB_ENABLE_MDNS=OFF —
+# research §12.1). It scans the ephemeral TLS range 32768-60999 with nmap and
+# tries adb connect on every open port until one becomes a "device" transport.
 #
-# Uso: adbw-sweep <IP>          # varre e conecta
-#      adbw-sweep <IP> --dry    # só lista portas abertas, não conecta
+# Usage: adbw-sweep <IP>          # scans and connects
+#        adbw-sweep <IP> --dry    # only lists open ports, does not connect
 #
-# A porta achada é gravada no ~/.cache/adbw-state (mesmo arquivo do --watch),
-# então o watch passa a tentá-la primeiro.
+# The port found is written to ~/.cache/adbw-state (same file as --watch), so
+# the watch starts trying it first.
 
 set -uo pipefail
 
-GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m'
 info() { echo -e "${GREEN}[*]${NC} $1"; }
-fail() { echo -e "${RED}[✗]${NC} $1" >&2; exit 1; }
+fail() {
+	echo -e "${RED}[✗]${NC} $1" >&2
+	exit 1
+}
 warn() { echo -e "${YELLOW}[!]${NC} $1"; }
 
-command -v adb >/dev/null 2>&1 || fail "adb ausente — instale: pkg install android-tools"
-command -v nmap >/dev/null 2>&1 || fail "nmap ausente — instale: pkg install nmap"
+command -v adb >/dev/null 2>&1 || fail "adb missing — install: pkg install android-tools"
+command -v nmap >/dev/null 2>&1 || fail "nmap missing — install: pkg install nmap"
 
 IP="${1:-}"
 DRY="${2:-}"
-[ -n "$IP" ] || { sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 1; }
-echo "$IP" | grep -qE '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' || fail "IP inválido: '$IP'"
+[ -n "$IP" ] || {
+	sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'
+	exit 1
+}
+echo "$IP" | grep -qE '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' || fail "invalid IP: '$IP'"
 
-info "Varrendo $IP (32768-60999, porta TLS dinâmica do wireless debugging A11+)..."
+info "Scanning $IP (32768-60999, the dynamic TLS port of Android 11+ wireless debugging)..."
 PORTS="$(nmap -p 32768-60999 --open -T4 "$IP" -oG - 2>/dev/null | grep -oE '[0-9]+/open' | cut -d/ -f1 | sort -n)"
 
 if [ -z "$PORTS" ]; then
-  fail "nenhuma porta aberta no range. Verifique: depuração wireless ligada? IP correto? mesma rede?"
+	fail "no open port in the range. Check: is wireless debugging on? correct IP? same network?"
 fi
 
 N=$(echo "$PORTS" | wc -l)
-info "porta(s) aberta(s): $(echo $PORTS | tr '\n' ' ') ($N)"
+info "open port(s): $(echo $PORTS | tr '\n' ' ') ($N)"
 
 if [ "$DRY" = "--dry" ]; then
-  info "--dry: sem conexão. Tente: adbw-sweep $IP (sem --dry)"
-  exit 0
+	info "--dry: no connection. Try: adbw-sweep $IP (without --dry)"
+	exit 0
 fi
 
 STATE="${HOME}/.cache/adbw-state"
 for P in $PORTS; do
-  info "tentando adb connect $IP:$P..."
-  timeout 8 adb connect "$IP:$P" >/dev/null 2>&1
-  if adb devices 2>/dev/null | awk 'NR>1 && $2=="device" {found=1} END {exit !(found)}'; then
-    info "conectado em $IP:$P ✓"
-    mkdir -p "$(dirname "$STATE")"
-    printf 'addr=%s:%s\nlast_seen=%s\n' "$IP" "$P" "$(date +%s)" > "$STATE"
-    info "gravado em $STATE — adbw --watch passa a tentar essa porta primeiro"
-    adb devices
-    exit 0
-  fi
+	info "trying adb connect $IP:$P..."
+	timeout 8 adb connect "$IP:$P" >/dev/null 2>&1
+	if adb devices 2>/dev/null | awk 'NR>1 && $2=="device" {found=1} END {exit !(found)}'; then
+		info "connected to $IP:$P ✓"
+		mkdir -p "$(dirname "$STATE")"
+		printf 'addr=%s:%s\nlast_seen=%s\n' "$IP" "$P" "$(date +%s)" >"$STATE"
+		info "saved to $STATE — adbw --watch will try this port first"
+		adb devices
+		exit 0
+	fi
 done
 
-fail "portas abertas encontradas ($PORTS) mas nenhuma virou transporte adb device —
-pode ser outro serviço escutando; confirme que a Depuração wireless está ativa"
+fail "open ports found ($PORTS) but none became an adb device transport —
+it may be another service listening; confirm that Wireless debugging is on"

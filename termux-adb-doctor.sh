@@ -8,8 +8,11 @@ NC='\033[0m'
 
 PREFIX="${PREFIX:-/data/data/com.termux/files/usr}"
 
-ok()   { echo -e "  ${GREEN}✓${NC} $1"; }
-fail() { echo -e "  ${RED}✗${NC} $1"; ISSUES=$((ISSUES + 1)); }
+ok() { echo -e "  ${GREEN}✓${NC} $1"; }
+fail() {
+	echo -e "  ${RED}✗${NC} $1"
+	ISSUES=$((ISSUES + 1))
+}
 warn() { echo -e "  ${YELLOW}!${NC} $1"; }
 
 ISSUES=0
@@ -19,160 +22,163 @@ echo "termux-adb doctor v4.0.0"
 echo "========================"
 echo
 
-# 1. Binários
-echo "Binários:"
+# 1. Binaries
+echo "Binaries:"
 if command -v termux-adb >/dev/null 2>&1; then
-  VER="$(timeout 3 termux-adb version 2>/dev/null | head -1 || echo '?')"
-  ok "termux-adb: $VER"
+	VER="$(timeout 3 termux-adb version 2>/dev/null | head -1 || echo '?')"
+	ok "termux-adb: $VER"
 else
-  fail "termux-adb não encontrado no PATH"
+	fail "termux-adb not found on PATH"
 fi
 
 if command -v termux-fastboot >/dev/null 2>&1; then
-  VER="$(timeout 3 termux-fastboot --version 2>/dev/null | head -1 || echo '?')"
-  ok "termux-fastboot: $VER"
+	VER="$(timeout 3 termux-fastboot --version 2>/dev/null | head -1 || echo '?')"
+	ok "termux-fastboot: $VER"
 else
-  fail "termux-fastboot não encontrado no PATH"
+	fail "termux-fastboot not found on PATH"
 fi
 echo
 
 # 2. Termux:API
 echo "Termux:API:"
 if command -v termux-usb >/dev/null 2>&1; then
-  ok "termux-usb presente"
+	ok "termux-usb present"
 else
-  fail "termux-usb não encontrado — instale termux-api (pkg install termux-api)"
+	fail "termux-usb not found — install termux-api (pkg install termux-api)"
 fi
 
 if timeout 3 termux-usb -l >/dev/null 2>&1; then
-  ok "app Termux:API funcional"
+	ok "Termux:API app functional"
 else
-  warn "termux-usb -l falhou — o app Termux:API pode não estar instalado (F-Droid)"
+	warn "termux-usb -l failed — the Termux:API app may not be installed (F-Droid)"
 fi
 echo
 
-# 3. Pacote dpkg
-echo "Pacote:"
+# 3. dpkg package
+echo "Package:"
 if dpkg -s termux-adb >/dev/null 2>&1; then
-  PKG_VER="$(dpkg -s termux-adb 2>/dev/null | grep '^Version:' | cut -d' ' -f2)"
-  ok "termux-adb instalado via dpkg ($PKG_VER)"
+	PKG_VER="$(dpkg -s termux-adb 2>/dev/null | grep '^Version:' | cut -d' ' -f2)"
+	ok "termux-adb installed via dpkg ($PKG_VER)"
 else
-  fail "pacote termux-adb não instalado"
+	fail "termux-adb package not installed"
 fi
 
-if wget -q --spider --timeout=5 "https://api.github.com/repos/rianprei/termux-adb/releases/latest" 2>/dev/null; then
-  ok "GitHub Releases acessível"
+if wget -q --spider --timeout=5 "https://api.github.com/repos/GeneralKaos666/termux-adb/releases/latest" 2>/dev/null; then
+	ok "GitHub Releases reachable"
 else
-  warn "GitHub Releases inacessível (sem internet ou API rate limit)"
+	warn "GitHub Releases unreachable (no internet or API rate limit)"
 fi
 echo
 
-# 4. Configuração
-echo "Configuração:"
+# 4. Configuration
+echo "Configuration:"
 if [ -n "$ANDROID_USER_HOME" ]; then
-  ok "ANDROID_USER_HOME=$ANDROID_USER_HOME"
+	ok "ANDROID_USER_HOME=$ANDROID_USER_HOME"
 elif [ -n "$ANDROID_SDK_HOME" ]; then
-  warn "ANDROID_SDK_HOME definido (descontinuado) — rode install.sh para migrar para ANDROID_USER_HOME"
+	warn "ANDROID_SDK_HOME set (deprecated) — run install.sh to upgrade to ANDROID_USER_HOME"
 else
-  warn "ANDROID_USER_HOME não definido — os dados do adb vão para \$HOME (rode install.sh para isolar)"
+	warn "ANDROID_USER_HOME not set — adb data will go to \$HOME (run install.sh to isolate)"
 fi
 
 if [ -d "$HOME/.termux-adb" ]; then
-  ok "diretório ~/.termux-adb existe"
+	ok "~/.termux-adb directory exists"
 else
-  warn "~/.termux-adb não existe (será criado no primeiro uso do adb)"
+	warn "~/.termux-adb does not exist (it will be created on first adb use)"
 fi
 echo
 
-# 5. Front-ends unificados
-echo "Front-ends (adb unificado):"
+# 5. Unified front-ends
+echo "Front-ends (unified adb):"
 if [ -x "$HOME/.local/bin/adb" ]; then
-  ok "front-end adb ok"
+	ok "adb front-end OK"
 else
-  warn "front-end adb ausente (rode install.sh)"
+	warn "adb front-end missing (run install.sh)"
 fi
 
 if [ -x "$HOME/.local/bin/fastboot" ]; then
-  ok "front-end fastboot ok"
+	ok "fastboot front-end OK"
 else
-  warn "front-end fastboot ausente (rode install.sh)"
+	warn "fastboot front-end missing (run install.sh)"
 fi
 
 if [ -e "$HOME/.local/bin/adb-otg-watcher" ]; then
-  ok "front-end adb-otg-watcher ok"
+	ok "adb-otg-watcher front-end OK"
 else
-  warn "adb-otg-watcher ausente (rode install.sh)"
+	warn "adb-otg-watcher missing (run install.sh)"
 fi
 echo
 
-# 6. Ferramentas extras
-echo "Ferramentas extras:"
+# 6. Extra tools
+echo "Extra tools:"
 for TOOL in wireless-adb termux-adb-update adbs adbmenu adbpair adbotg adbw adbw-root-porta adblocalhost; do
-  if command -v "$TOOL" >/dev/null 2>&1; then
-    ok "$TOOL instalado"
-  else
-    warn "$TOOL não instalado (rode install.sh para adicionar)"
-  fi
+	if command -v "$TOOL" >/dev/null 2>&1; then
+		ok "$TOOL installed"
+	else
+		warn "$TOOL not installed (run install.sh to add it)"
+	fi
 done
 echo
 
-# 6.1 Phantom process killer (Android 12+ mata processos filhos do Termux,
-#     incluindo o server adb) — fonte: context/termux-adb-research.md §4/§10.2
+# 6.1 Phantom process killer (Android 12+ kills child processes of Termux,
+#     including the adb server) — source: context/termux-adb-research.md §4/§10.2
 echo "Phantom process killer (Android 12+):"
 if command -v settings >/dev/null 2>&1; then
-  PHANTOM="$(settings get global settings_enable_monitor_phantom_procs 2>/dev/null || echo 'inacessivel')"
-  case "$PHANTOM" in
-    null|0)  ok "phantom killer desativado ($PHANTOM)" ;;
-    1)       warn "phantom killer ATIVO — pode matar o server adb do Termux (signal 9)"; 
-             warn "  mitigação: settings put global settings_enable_monitor_phantom_procs false (via sessão adb)" ;;
-    *)       warn "não foi possível ler a setting (rode via sessão adb/termux-api): '$PHANTOM'" ;;
-  esac
+	PHANTOM="$(settings get global settings_enable_monitor_phantom_procs 2>/dev/null || echo 'inaccessible')"
+	case "$PHANTOM" in
+	null | 0) ok "phantom killer disabled ($PHANTOM)" ;;
+	1)
+		warn "phantom killer ACTIVE — it can kill the Termux adb server (signal 9)"
+		warn "  mitigation: settings put global settings_enable_monitor_phantom_procs false (via an adb session)"
+		;;
+	*) warn "could not read the setting (run via adb session/termux-api): '$PHANTOM'" ;;
+	esac
 else
-  warn "comando settings ausente — check do phantom killer pulado"
+	warn "settings command missing — phantom killer check skipped"
 fi
 echo
 
-# 6.2 mDNS no binário android-tools — o build do Termux (nmeum) compila com
-#     ANDROID_TOOLS_ADB_ENABLE_MDNS=OFF (§12.1 do research): ausência é ESPERADO, não erro
-echo "mDNS do binário adb:"
+# 6.2 mDNS in the android-tools binary — the Termux build (nmeum) compiles with
+#     ANDROID_TOOLS_ADB_ENABLE_MDNS=OFF (research §12.1): absence is EXPECTED, not an error
+echo "mDNS of the adb binary:"
 if timeout 5 adb mdns services >/dev/null 2>&1; then
-  ok "adb mdns disponível (binário compilado com mDNS)"
+	ok "adb mdns available (binary compiled with mDNS)"
 else
-  warn "adb mdns indisponível — ESPERADO no Termux (android-tools compila sem mDNS, não é defeito)"
-  warn "  descoberta de porta dinâmica: use nmap (item 5) ou porta fixa via adbw-root-porta (root)"
+	warn "adb mdns unavailable — EXPECTED on Termux (android-tools compiles without mDNS, not a defect)"
+	warn "  dynamic port discovery: use nmap (item 5) or a fixed port via adbw-root-porta (root)"
 fi
 echo
 
-# 6.3 Chaves de host em ~/.termux-adb (identidade RSA do host adb)
-echo "Chaves de host (~/.termux-adb):"
+# 6.3 Host keys in ~/.termux-adb (the adb host's RSA identity)
+echo "Host keys (~/.termux-adb):"
 KEYS_DIR="${ANDROID_USER_HOME:-$HOME/.termux-adb}"
 if [ -f "$KEYS_DIR/adbkey" ] && [ -f "$KEYS_DIR/adbkey.pub" ]; then
-  ok "chaves RSA presentes ($KEYS_DIR/adbkey{,.pub})"
-  warn "  backup recomendado: tar czf adbw-keys-backup.tar.gz -C '$KEYS_DIR' adbkey adbkey.pub"
+	ok "RSA keys present ($KEYS_DIR/adbkey{,.pub})"
+	warn "  backup recommended: tar czf adbw-keys-backup.tar.gz -C '$KEYS_DIR' adbkey adbkey.pub"
 else
-  warn "chaves RSA ausentes em $KEYS_DIR (geradas no primeiro uso; sem elas cada conexão nova pede prompt)"
+	warn "RSA keys missing in $KEYS_DIR (generated on first use; without them every new connection prompts)"
 fi
 echo
 
-# 6.4 Módulo Magisk termuxadb_rootport (porta fixa 5555 no boot)
-# Nota: /data/adb/modules/ é raiz-only (Termux não le direto, "ls" sem su
-# falha silenciosamente = falso negativo). Checa direto pelo efeito real da
-# prop, que é publica pra leitura (getprop nao exige root) — mais robusto,
-# cobre qualquer metodo que fixou a porta, não só este módulo específico.
-echo "Porta ADB fixa (módulo Magisk ou equivalente):"
+# 6.4 Magisk module termuxadb_rootport (fixed port 5555 at boot)
+# Note: /data/adb/modules/ is root-only (Termux can't read it directly, "ls" without su
+# fails silently = false negative). Check directly by the prop's real effect,
+# which is publicly readable (getprop doesn't require root) — more robust,
+# covers any method that fixed the port, not just this specific module.
+echo "Fixed ADB port (Magisk module or equivalent):"
 RP="$(getprop persist.adb.tcp.port 2>/dev/null || true)"
 if [ "$RP" = "5555" ]; then
-  ok "porta fixa ativa (persist.adb.tcp.port=5555)"
+	ok "fixed port active (persist.adb.tcp.port=5555)"
 else
-  warn "porta não fixada ('${RP:-vazia}') — instale o módulo Magisk termux-adb-magisk-rootport (root) pra parar de descobrir porta TLS aleatória a cada boot"
+	warn "port not fixed ('${RP:-empty}') — install the Magisk module termux-adb-magisk-rootport (root) to stop discovering a random TLS port on every boot"
 fi
 echo
 
-# Resultado
+# Result
+echo "========================"
 echo "========================"
 if [ "$ISSUES" -eq 0 ]; then
-  echo -e "${GREEN}Tudo OK — nenhum problema encontrado; o ambiente está pronto para uso.${NC}"
+	echo -e "${GREEN}All OK — no problems found; the environment is ready to use.${NC}"
 else
-  echo -e "${RED}$ISSUES problema(s) encontrado(s) — rode install.sh para corrigir.${NC}"
+	echo -e "${RED}$ISSUES problem(s) found — run install.sh to fix them.${NC}"
 fi
 echo

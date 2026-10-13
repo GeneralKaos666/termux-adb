@@ -1,153 +1,153 @@
-# Termux ADB Unificado
+# Termux ADB Unified
 
-ADB e Fastboot no Termux **sem root** e **sem desbloquear o bootloader**.
+ADB and Fastboot on Termux **without root** and **without unlocking the bootloader**.
 
-[![versão-4.0.0](https://img.shields.io/badge/vers%C3%A3o-4.0.0-blue)](https://github.com/rianprei/termux-adb/releases/tag/v4.0.0)
-[![licença-MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-green)](LICENSE)
+[![version-4.0.0](https://img.shields.io/badge/version-4.0.0-blue)](https://github.com/GeneralKaos666/termux-adb/releases/tag/v4.0.0)
+[![license-MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-Este projeto integra as principais implementações do ecossistema ADB do Termux — USB OTG via `termux-usb`, wireless (Android 11+), localhost e espelhamento via scrcpy — em uma **interface de comando única** com roteamento automático de backend.
+This project integrates the main implementations of the Termux ADB ecosystem — USB OTG via `termux-usb`, wireless (Android 11+), localhost and screen mirroring via scrcpy — into a **single unified command interface** with automatic backend routing.
 
-## Recursos principais
+## Key features
 
-- **USB OTG sem root (dispositivo→dispositivo)** — binário `termux-adb` patchado, acesso via `termux-usb`.
-- **Wireless (Android 11+, pareamento por código)** — front-end `adb` + assistente interativo `adbw`.
-- **Localhost (depuração do próprio aparelho)** — `adblocalhost` (conexão em `127.0.0.1`).
-- **Front-end unificado `adb`** — decide automaticamente entre `termux-adb` (OTG) e o `adb` nativo (wireless), com decisão baseada em cache do watcher (latência de ~1 ms).
-- **Fastboot sem root** — front-end `fastboot` encaminha para `termux-fastboot`.
-- **Diagnóstico integrado** — `adbs` (status rápido) e `termux-adb-doctor` (verificação completa).
-- **Menu interativo** — `adbmenu`, consolidando todas as operações.
-- **Espelhamento de tela com scrcpy** — opcional, integrado ao menu e ao diagnóstico.
-- **Config isolada** — dados do ADB em `~/.termux-adb`, fora do `$HOME`.
-- **Distribuição própria** — binários `.deb` hospedados no GitHub Releases, com verificação de integridade SHA256.
+- **USB OTG without root (device→device)** — patched `termux-adb` binary, accessed via `termux-usb`.
+- **Wireless (Android 11+, pairing by code)** — `adb` front-end + interactive assistant `adbw`.
+- **Localhost (debugging this device)** — `adblocalhost` (connection on `127.0.0.1`).
+- **Unified `adb` front-end** — automatically decides between `termux-adb` (OTG) and native `adb` (wireless), with a decision based on a watcher cache (latency ~1 ms).
+- **Fastboot without root** — `fastboot` front-end forwards to `termux-fastboot`.
+- **Integrated diagnostics** — `adbs` (quick status) and `termux-adb-doctor` (full check).
+- **Interactive menu** — `adbmenu`, consolidating all operations.
+- **Screen mirroring with scrcpy** — optional, integrated into the menu and diagnostics.
+- **Isolated config** — adb data in `~/.termux-adb`, outside `$HOME`.
+- **Self-contained distribution** — `.deb` binaries hosted on GitHub Releases, with SHA256 integrity verification.
 
-## Requisitos
+## Requirements
 
-- **Termux** e **Termux:API** — ambos do [F-Droid](https://f-droid.org/). **Não** utilizar as versões da Play Store (são desatualizadas e incompatíveis).
-- **Dispositivo Android com suporte a USB host** — para a modalidade OTG. Alternativamente, **Android 11+** para usar via wireless sem cabo.
-- **~100 MB de armazenamento livre** para o conjunto de binários e dependências.
+- **Termux** and **Termux:API** — both from [F-Droid](https://f-droid.org/). **Do not** use the Play Store versions (they are outdated and incompatible).
+- **Android device with USB host support** — for the OTG mode. Alternatively, **Android 11+** to use wireless without a cable.
+- **~100 MB of free storage** for the binaries and dependencies.
+- **aarch64 (64-bit ARM) device** — prebuilt packages are provided only for `aarch64`. 32-bit ARM (`arm`/`armv7l`/`armv8l`) is **not** currently supported.
 
-## Instalação
+## Installation
 
-Instale Termux e Termux:API pelo F-Droid e execute:
+Install [Termux](https://f-droid.org/packages/com.termux/) and [Termux:API](https://f-droid.org/packages/com.termux.api/) from F-Droid, then:
 
 ```
-curl -s https://raw.githubusercontent.com/rianprei/termux-adb/main/install.sh | bash
+curl -s https://raw.githubusercontent.com/GeneralKaos666/termux-adb/main/install.sh | bash
 ```
 
-O instalador executa as seguintes etapas, nesta ordem:
+The installer runs the following steps, in order:
 
-1. **Verificação de arquitetura** — bloqueia arquiteturas não suportadas (suportadas: `aarch64`, `arm`/`armv7l`/`armv8l`).
-2. **Dependências base** — instala `wget`.
-3. **termux-api** — instala automaticamente se `termux-usb` não estiver presente.
-4. **Download e instalação do pacote `.deb`** (GitHub Releases) com **verificação SHA256** antes da instalação via `dpkg`; o processo para no primeiro erro (`set -e`).
-5. **Isolamento de dados** — define `ANDROID_USER_HOME` e `ANDROID_SDK_HOME` apontando para `~/.termux-adb` nos shell RCs (`.bashrc`/`.zshrc`).
-6. **Ferramentas extras** — instaladas no PATH (`$PREFIX/bin`).
-7. **Front-ends unificados** — `adb`, `fastboot` e `adb-otg-watcher` em `~/.local/bin`, com garantia de precedência no PATH.
-8. **Health-check** — executa `termux-adb version` e `termux-fastboot --version` para confirmar a instalação.
+1. **Architecture check** — blocks unsupported architectures (supported: `aarch64` only).
+2. **Base dependencies** — installs `wget`.
+3. **termux-api** — installs automatically if `termux-usb` is not present.
+4. **Download and install the `.deb` package** (GitHub Releases) with **SHA256 verification** before installing via `dpkg`; the process stops at the first error (`set -e`).
+5. **Data isolation** — sets `ANDROID_USER_HOME` and `ANDROID_SDK_HOME` pointing to `~/.termux-adb` in the shell RCs (`.bashrc`/`.zshrc`).
+6. **Extra tools** — installed on PATH (`$PREFIX/bin`).
+7. **Unified front-ends** — `adb`, `fastboot` and `adb-otg-watcher` in `~/.local/bin`, ensuring PATH precedence.
+8. **Health-check** — runs `termux-adb version` and `termux-fastboot --version` to confirm the installation.
 
-O projeto é 100% self-contained: os binários são hospedados no próprio repositório, sem dependência de servidores externos.
+The project is 100% self-contained: the binaries are hosted in this repository, with no dependency on external servers.
 
-## Uso
+## Usage
 
-### USB OTG (cabo)
+### USB OTG (cable)
 
 ```
 adb devices
 ```
 
-Na primeira vez, o dispositivo Android solicita permissão USB — aceite. Para listar e conceder permissão aos dispositivos OTG conectados, use `adbotg`.
+The first time, the Android device requests USB permission — accept it. To list and grant permission to the connected OTG devices, use `adbotg`.
 
-### Wireless (Android 11+, sem cabo)
+### Wireless (Android 11+, no cable)
 
 ```
 adbw
 ```
 
-O `adbw` é um guia interativo: detecta o IP local, valida os endereços `IP:PORTA`, executa o pareamento por código e a conexão, com timeout de 15 s por etapa. Alternativamente, faça manualmente:
+`adbw` is an interactive guide: it detects the local IP, validates the `IP:PORT` addresses, runs code pairing and connection, with a 15 s timeout per step. Alternatively, do it manually:
 
 ```
-adb pair IP:PORTA_PAREAMENTO CODIGO
-adb connect IP:PORTA
+adb pair IP:PAIRING_PORT CODE
+adb connect IP:PORT
 ```
 
-### Pareamento rápido
+### Quick pairing
 
 ```
-adbpair IP:PORTA_PAREAMENTO CODIGO [IP:PORTA_CONEXAO]
+adbpair IP:PAIRING_PORT CODE [IP:CONNECTION_PORT]
 ```
 
-Se a porta de conexão não for informada, apenas o pareamento é executado.
+If the connection port is not given, only the pairing is run.
 
-### Localhost (próprio aparelho)
+### Localhost (this device)
 
 ```
 adblocalhost
 ```
 
-Conecta em `127.0.0.1` via depuração wireless, permitindo depurar o próprio dispositivo.
+Connects to `127.0.0.1` via wireless debugging, allowing you to debug this device.
 
-### Diagnóstico
-
-```
-adbs
-termux-adb-doctor
-```
-
-`adbs` consolida o status geral do ambiente: backends, modos de acesso e aplicação de configuração. `termux-adb-doctor` realiza a verificação completa (binários, termux-api, pacote dpkg, configuração isolada, front-ends e ferramentas extras) com saída verde/vermelha por item.
-
-### Menu interativo
+### Interactive menu
 
 ```
 adbmenu
 ```
 
-Reúne as operações mais comuns: conexão wireless e localhost, listagem OTG, `adb shell`, espelhamento via scrcpy, shell Bash na sessão ADB (`ADBash.sh`), instalação de APK, `pull`/`push`, diagnóstico e pareamento.
+Brings together the most common operations: wireless and localhost connection, OTG listing, `adb shell`, scrcpy mirroring, Bash shell in the ADB session (`ADBash.sh`), APK installation, `pull`/`push`, diagnostics and pairing.
 
-### Status do ambiente
+### Environment status
 
 ```
 adbs
 ```
 
-Exibe versões de backend, estado do `termux-usb`, variáveis de ambiente e a lista de dispositivos (`adb devices`).
+Shows backend versions, the `termux-usb` state, environment variables and the device list (`adb devices`).
 
-## Ferramentas instaladas
+### Diagnostics
 
-| Comando               | Destino           | Função |
-|-----------------------|-------------------|--------|
-| `termux-adb`          | `$PREFIX/bin`     | Binário ADB patchado (OTG via `termux-usb`), instalado via `dpkg`. |
-| `termux-fastboot`     | `$PREFIX/bin`     | Binário Fastboot patchado, instalado via `dpkg`. |
-| `adb`                 | `~/.local/bin`    | Front-end unificado com roteamento automático de backend. |
-| `fastboot`            | `~/.local/bin`    | Front-end que encaminha para `termux-fastboot`. |
-| `adb-otg-watcher`     | `~/.local/bin`    | Watcher de background que mantém o cache OTG atualizado. |
-| `wireless-adb`        | `$PREFIX/bin`     | Assistente interativo de conexão wireless (usa `termux-adb`). |
-| `adbotg`              | `$PREFIX/bin`     | Lista dispositivos USB OTG via `termux-usb -l`. |
-| `adbpair`             | `$PREFIX/bin`     | Pareamento rápido por código. |
-| `adbw`                | `$PREFIX/bin`     | Conexão wireless interativa; `adbw --watch [IP] [PORTA]` mantém a sessão viva com reconexão automática. |
-| `adbw-root-porta`     | `$PREFIX/bin`     | Porta fixa de ADB via root (persist.adb.tcp.port, default 5555). |
-| `adbw-sweep`          | `$PREFIX/bin`     | Descoberta de porta dinâmica sem root via nmap (32768-60999). |
-| `adb-keys-backup`     | `$PREFIX/bin`     | Backup/restore das chaves RSA de host (~/.termux-adb). |
-| `adblocalhost`        | `$PREFIX/bin`     | Depuração do próprio aparelho (`127.0.0.1`). |
-| `adbs`                | `$PREFIX/bin`     | Status geral do sistema ADB (diagnóstico rápido). |
-| `adbmenu`             | `$PREFIX/bin`     | Menu interativo das ferramentas ADB. |
-| `termux-adb-doctor`   | `$PREFIX/bin`     | Diagnóstico completo do ambiente. |
-| `termux-adb-update`   | `$PREFIX/bin`     | Auto-updater de scripts e pacote. |
+```
+termux-adb-doctor
+```
 
-## Modo root: módulo Magisk
+Full check (binaries, termux-api, the Termux:API app, dpkg package, isolated config, front-ends and extra tools) with green/red output per item.
 
-O módulo **`magisk-module/`** (id `termuxadb_rootport`) resolve de vez o principal atrito do wireless debugging em Android 11+: **a porta de conexão TLS aleatória que muda a cada boot e o toggle que se desliga sozinho**.
+## Installed tools
 
-### O que ele faz
+| Command               | Destination       | Function |
+|-----------------------|-------------------|----------|
+| `termux-adb`          | `$PREFIX/bin`     | Patched ADB binary (OTG via `termux-usb`), installed via `dpkg`. |
+| `termux-fastboot`     | `$PREFIX/bin`     | Patched Fastboot binary, installed via `dpkg`. |
+| `adb`                 | `~/.local/bin`    | Unified front-end with automatic backend routing. |
+| `fastboot`            | `~/.local/bin`    | Front-end that forwards to `termux-fastboot`. |
+| `adb-otg-watcher`     | `~/.local/bin`    | Background watcher that keeps the OTG cache up to date. |
+| `wireless-adb`        | `$PREFIX/bin`     | Interactive wireless connection assistant (uses `termux-adb`). |
+| `adbotg`              | `$PREFIX/bin`     | Lists USB OTG devices via `termux-usb -l`. |
+| `adbpair`             | `$PREFIX/bin`     | Quick pairing by code. |
+| `adbw`                | `$PREFIX/bin`     | Interactive wireless connection; `adbw --watch [IP] [PORT]` keeps the session alive with automatic reconnection. |
+| `adbw-root-porta`     | `$PREFIX/bin`     | Fixed ADB port via root (persist.adb.tcp.port, default 5555). |
+| `adbw-sweep`          | `$PREFIX/bin`     | Dynamic port discovery without root via nmap (32768-60999). |
+| `adb-keys-backup`     | `$PREFIX/bin`     | Backup/restore of the host RSA keys (~/.termux-adb). |
+| `adblocalhost`        | `$PREFIX/bin`     | Debugging this device (`127.0.0.1`). |
+| `adbs`                | `$PREFIX/bin`     | Overall status of the ADB system (quick diagnostics). |
+| `adbmenu`             | `$PREFIX/bin`     | Interactive menu of the ADB tools. |
+| `termux-adb-doctor`   | `$PREFIX/bin`     | Full environment diagnostics. |
+| `termux-adb-update`   | `$PREFIX/bin`     | Auto-updater for scripts and package. |
 
-No boot (gancho `post-fs-data`, antes do Android terminar de subir), o módulo grava `persist.adb.tcp.port=5555`:
+## Root mode: Magisk module
 
-- **`setprop` direto** — caminho oficial AOSP (o adbd lê `persist.adb.tcp.port` com fallback para `service.adb.tcp.port`, `daemon/main.cpp:275-277`);
-- **fallback automático `resetprop`** do Magisk se o SELinux negar o setprop (comportamento esperado em builds novos — ver `docs/SEGURANCA.md` e `context/termux-adb-research.md` §10.1);
-- log de execução em `/data/local/tmp/termuxadb_rootport.log`.
+The **`magisk-module/`** module (id `termuxadb_rootport`) finally solves the main friction of wireless debugging on Android 11+: **the random TLS connection port that changes on every boot, and the toggle that turns itself off**.
 
-Resultado: **ADB escutando fixo na porta 5555, sempre ligado, zero interação manual, sobrevive a reboot** (testado ao vivo no lake/POCO C75, HyperOS). Não existe mais porta aleatória pra descobrir — o `adbw --watch` passa a tentar sempre `IP:5555` primeiro.
+### What it does
 
-### Instalação
+At boot (the `post-fs-data` hook, before Android finishes starting up), the module writes `persist.adb.tcp.port=5555`:
+
+- **Direct `setprop`** — the official AOSP path (adbd reads `persist.adb.tcp.port` with a fallback to `service.adb.tcp.port`, `daemon/main.cpp:275-277`);
+- **Automatic `resetprop` fallback** from Magisk if SELinux denies the setprop (expected behavior on newer builds — see `docs/SECURITY.md` and `context/termux-adb-research.md` §10.1);
+- Execution log at `/data/local/tmp/termuxadb_rootport.log`.
+
+Result: **ADB listening on a fixed port 5555, always on, zero manual interaction, survives a reboot** (tested live on a POCO C75 "lake", HyperOS). There's no more random port to discover — `adbw --watch` now always tries `IP:5555` first.
+
+### Installation
 
 Via adb/terminal:
 
@@ -156,85 +156,85 @@ adb push magisk-module /data/local/tmp/termuxadb_rootport
 su -c "magisk --install-module /data/local/tmp/termuxadb_rootport"
 ```
 
-Ou pelo app Magisk: **Módulos → Install from storage** → selecione o zip do módulo (empacote a pasta `magisk-module/`). Reboot necessário para o gancho `post-fs-data` rodar.
+Or from the Magisk app: **Modules → Install from storage** → select the module zip (package the `magisk-module/` folder). A reboot is required for the `post-fs-data` hook to run.
 
-### Verificação
+### Verification
 
 ```bash
-getprop persist.adb.tcp.port          # deve retornar 5555
-adb connect <IP-do-aparelho>:5555     # de qualquer host da rede
+getprop persist.adb.tcp.port          # should return 5555
+adb connect <IP-of-device>:5555       # from any host on the network
 ```
 
-Ou rode `termux-adb-doctor` — ele detecta o módulo instalado.
+Or run `termux-adb-doctor` — it detects the installed module.
 
-### Aviso
+### Warning
 
-A porta fixa 5555 é **plaintext + autenticação RSA** (não é o TLS do wireless A11+). Use somente em rede confiável — ver `docs/SEGURANCA.md`.
+Fixed port 5555 is **plaintext + RSA authentication** (it's not the Android 11+ wireless TLS). Use it only on a trusted network — see `docs/SECURITY.md`.
 
-## Como funciona
+## How it works
 
-O `termux-adb` utiliza a API `termux-usb` do Termux:API para obter file descriptors de dispositivos USB sem exigir root. Os binários são patchados em `lib` para remapear `/dev/bus/usb` para um diretório virtual, e um **Unix Domain Socket (UDS)** transfere os descriptors entre processos — o que permite múltiplos dispositivos conectados, inclusive via hub USB no OTG.
+`termux-adb` uses the `termux-usb` API from Termux:API to obtain file descriptors of USB devices without requiring root. The binaries are patched in `lib` to remap `/dev/bus/usb` to a virtual directory, and a **Unix Domain Socket (UDS)** transfers the descriptors between processes — allowing multiple connected devices, including via a USB hub over OTG.
 
-O front-end `adb` une as duas famílias de acesso:
+The `adb` front-end unifies the two access families:
 
-- **OTG** → `termux-adb` (patch nohajc via `termux-usb`);
-- **Wireless/localhost** → `adb` nativo (android-tools, mais rápido).
+- **OTG** → `termux-adb` (nohajc patch via `termux-usb`);
+- **Wireless/localhost** → native `adb` (android-tools, faster).
 
-O `adb-otg-watcher` consulta `termux-usb -l` em background (instância única garantida por `flock`, atualização a cada 4 s) e grava o resultado em `~/.termux-adb/otg.cache`. O front-end decide a rota com apenas um `stat` + um `cat` (~1 ms), sem bloquear. O comando `pair`/`connect`/`disconnect` e demais operações de rede são direcionados sempre ao backend nativo. O pacote `dpkg` fornece os binários `termux-adb` e `termux-fastboot`; o roteamento para os front-ends `adb`/`fastboot` em `~/.local/bin` garante a interface unificada.
+The `adb-otg-watcher` queries `termux-usb -l` in the background (single instance guaranteed by `flock`, updates every 4 s) and writes the result to `~/.termux-adb/otg.cache`. The front-end decides the route with just one `stat` + one `cat` (~1 ms), without blocking. The `pair`/`connect`/`disconnect` commands and other network operations are always directed to the native backend. The `dpkg` package provides the `termux-adb` and `termux-fastboot` binaries; the routing to the `adb`/`fastboot` front-ends in `~/.local/bin` guarantees the unified interface.
 
-## Comparação
+## Comparison
 
-| Feature | nohajc | MasterDevX | rendiix | **Este (v4.0.0)** |
+| Feature | nohajc | MasterDevX | rendiix | **This (v4.0.0)** |
 |---------|:------:|:----------:|:-------:|:------------------:|
-| Sem root | ✅ | ❌ | ❌ | ✅ |
+| No root | ✅ | ❌ | ❌ | ✅ |
 | OTG via termux-usb | ✅ | ❌ | ❌ | ✅ |
 | Wireless ADB | ❌ | ❌ | ❌ | ✅ |
 | Localhost ADB | ❌ | ❌ | ❌ | ✅ |
-| Diagnóstico | ❌ | ❌ | ❌ | ✅ |
-| Uninstall limpo | ❌ | ✅ | ❌ | ✅ |
-| Config isolada | ❌ | ✅ | ❌ | ✅ |
+| Diagnostics | ❌ | ❌ | ❌ | ✅ |
+| Clean uninstall | ❌ | ✅ | ❌ | ✅ |
+| Isolated config | ❌ | ✅ | ❌ | ✅ |
 | Auto-updater | ❌ | ❌ | ❌ | ✅ |
-| Verificação SHA256 | ❌ | ❌ | ❌ | ✅ |
-| Arquitetura check | ❌ | ❌ | ❌ | ✅ |
-| Front-end com roteamento automático | ❌ | ❌ | ❌ | ✅ |
-| Watcher / baixa latência | ❌ | ❌ | ❌ | ✅ |
-| scrcpy integrado | ❌ | ❌ | ❌ | ✅ |
-| Menu interativo | ❌ | ❌ | ❌ | ✅ |
-| Distribuição própria | ❌ | ❌ | ❌ | ✅ |
+| SHA256 verification | ❌ | ❌ | ❌ | ✅ |
+| Architecture check | ❌ | ❌ | ❌ | ✅ |
+| Front-end with automatic routing | ❌ | ❌ | ❌ | ✅ |
+| Watcher / low latency | ❌ | ❌ | ❌ | ✅ |
+| scrcpy integrated | ❌ | ❌ | ❌ | ✅ |
+| Interactive menu | ❌ | ❌ | ❌ | ✅ |
+| Self-contained distribution | ❌ | ❌ | ❌ | ✅ |
 
-## Atualização
+## Update
 
 ```
 termux-adb-update
 ```
 
-Consulta a release mais recente no GitHub, atualiza os scripts instalados e, se houver nova versão do pacote no `install.sh`, reinstala-o automaticamente. Os front-ends `adb`/`fastboot` e o watcher são atualizados ao final.
+Queries the latest release on GitHub, updates the installed scripts and, if there is a new package version in `install.sh`, reinstalls it automatically. The `adb`/`fastboot` front-ends and the watcher are updated at the end.
 
-## Desinstalação
+## Uninstall
 
 ```
-curl -s https://raw.githubusercontent.com/rianprei/termux-adb/main/uninstall.sh | bash
+curl -s https://raw.githubusercontent.com/GeneralKaos666/termux-adb/main/uninstall.sh | bash
 ```
 
-Remove o pacote, ferramentas extras, front-ends e watcher, as linhas de configuração dos shell RCs e o diretório isolado `~/.termux-adb`.
+Removes the package, extra tools, front-ends and watcher, the configuration lines from the shell RCs and the isolated `~/.termux-adb` directory.
 
-## Limitações
+## Limitations
 
-A **enumeração do serial** via `libusb`/`termux-usb` é lenta. No `adb`, o impacto é mitigado pelo daemon, que varre periodicamente os dispositivos; já o `fastboot`, por não possuir daemon em background, torna a operação perceptivelmente lenta. Leve os timeouts em consideração ao operar no modo fastboot.
+Querying the serial via `libusb`/`termux-usb` is slow. It doesn't affect adb (daemon, scans periodically), but is noticeable in fastboot (no background service). Keep the timeouts in mind when operating in fastboot mode.
 
-O `adb` do Termux **conectando nele mesmo** (mesmo aparelho, via IP da LAN ou `127.0.0.1`) fica preso em `unauthorized` — o diálogo de autorização RSA nunca aparece na tela e o `logcat` não mostra nenhum evento de `AdbDebuggingManager`/RSA sendo processado. Confirmado em testes reais (LAN e loopback, com reautenticação forçada via `kill-server`) num device Android 16/HyperOS: o `adbd` no modo clássico `tcpip` (porta fixa, não a TLS de "Depuração sem fio") simplesmente não dispara esse fluxo pra conexões que se originam do próprio aparelho. Não é bug do `adbw` — o script reporta a falha de transporte corretamente. Afeta só o caso self-connect; conectar a partir de outro host (PC, outro celular) funciona normalmente e mostra o prompt.
+Termux's `adb` **connecting to itself** (same device, via LAN IP or `127.0.0.1`) gets stuck at `unauthorized` — the RSA authorization dialog never appears on screen and `logcat` shows no event of `AdbDebuggingManager`/RSA being processed. Confirmed in real tests (LAN and loopback, with forced re-authentication via `kill-server`) on an Android 16/HyperOS device: `adbd` in classic `tcpip` mode (fixed port, not the "Wireless debugging" TLS) simply never triggers that flow for connections originating from the device itself. It's not an `adbw` bug — the script reports the transport failure correctly. It only affects the self-connect case; connecting from another host (PC, another phone) works normally and shows the prompt.
 
-## Créditos
+## Credits
 
-Projeto que reúne e consolida as ideias do ecossistema ADB do Termux:
+Project that brings together and consolidates the ideas of the Termux ADB ecosystem:
 
-- **[nohajc/termux-adb](https://github.com/nohajc/termux-adb)** — patch do adb/fastboot + integração `termux-usb` (sem root).
-- **[MasterDevX/Termux-ADB](https://github.com/MasterDevX/Termux-ADB)** — conceito de isolamento dos dados do adb fora do `$HOME`.
-- **[rendiix/termux-adb-fastboot](https://github.com/rendiix/termux-adb-fastboot)** — validação do padrão de distribuição.
-- **[offici5l/termux-adb-fastboot](https://github.com/offici5l/termux-adb-fastboot)** — conceito dos symlinks `adb → termux-adb` e do auto-updater.
+- **[nohajc/termux-adb](https://github.com/nohajc/termux-adb)** — adb/fastboot patch + `termux-usb` integration (no root), distributed via its own apt repo.
+- **[MasterDevX/Termux-ADB](https://github.com/MasterDevX/Termux-ADB)** — concept of isolating adb data outside `$HOME`.
+- **[rendiix/termux-adb-fastboot](https://github.com/rendiix/termux-adb-fastboot)** — validated the distribution pattern via apt repo + GPG key.
+- **[offici5l/termux-adb-fastboot](https://github.com/offici5l/termux-adb-fastboot)** — `adb`→`termux-adb` symlinks and auto-updater concept.
 
-Scripts, documentação e a infraestrutura de instalação são originais deste projeto. Consulte [NOTICE.md](NOTICE.md) para a atribuição detalhada dos binários redistribuídos.
+The scripts, documentation and installation infrastructure are original to this project. See [NOTICE.md](NOTICE.md) for the detailed attribution of the redistributed binaries.
 
-## Licença
+## License
 
-Distribuído sob a licença [MIT](LICENSE).
+Distributed under the [MIT](LICENSE) license.

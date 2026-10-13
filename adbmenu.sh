@@ -1,7 +1,7 @@
 #!/data/data/com.termux/files/usr/bin/bash
 #
-# adbmenu — menu interativo das ferramentas ADB.
-# Uso: adbmenu   (sem argumentos)
+# adbmenu — interactive menu of the ADB tools.
+# Usage: adbmenu   (no arguments)
 
 set -uo pipefail
 
@@ -20,36 +20,36 @@ banner() {
   echo "  ██║  ██║██████╔╝██║         ██║ ╚═╝ ██║╚██████╔╝███████╗██║   ╚██████╔╝███████╗██║  ██║███████║ ███████╗"
   echo "  ╚═╝  ╚═╝╚═════╝ ╚═╝         ╚═╝     ╚═╝ ╚═════╝ ╚══════╝╚═╝    ╚═════╝ ╚══════╝╚═╝  ╚═╝╚══════╝ ╚══════╝"
   echo
-  echo -e "${NC}${GREEN}Termux ADB — sem root, sem bootloader${NC}"
+  echo -e "${NC}${GREEN}Termux ADB — no root, no bootloader${NC}"
   echo
 }
 
 menu() {
-  echo "Selecione uma opção:"
-  echo "  1) Conectar wireless (outro aparelho, Android 11+)  [adbw]"
-  echo "  2) Conectar no próprio aparelho (localhost)         [adblocalhost]"
-  echo "  3) Listar dispositivos USB OTG                      [adbotg]"
-  echo "  4) Status dos dispositivos                          [adb devices -l]"
-  echo "  5) Shell Android                                    [adb shell]"
-  echo "  6) Espelhar tela via scrcpy"
-  echo "  7) Shell Bash na sessão ADB                         [ADBash.sh]"
-  echo "  8) Instalar APK                                     [adb install]"
-  echo "  9) Baixar arquivo                                   [adb pull]"
-  echo " 10) Enviar arquivo                                   [adb push]"
-  echo " 11) Diagnóstico completo                             [adbs]"
-  echo " 12) Parear novo aparelho                             [adbpair]"
-  echo "  q) Sair"
+  echo "Select an option:"
+  echo "  1) Connect wireless (another device, Android 11+)   [adbw]"
+  echo "  2) Connect to this device (localhost)               [adblocalhost]"
+  echo "  3) List USB OTG devices                             [adbotg]"
+  echo "  4) Device status                                    [adb devices -l]"
+  echo "  5) Android shell                                    [adb shell]"
+  echo "  6) Mirror screen via scrcpy"
+  echo "  7) Bash shell in the ADB session                    [ADBash.sh]"
+  echo "  8) Install APK                                      [adb install]"
+  echo "  9) Download file                                    [adb pull]"
+  echo " 10) Upload file                                      [adb push]"
+  echo " 11) Full diagnostics                                 [adbs]"
+  echo " 12) Pair a new device                                [adbpair]"
+  echo "  q) Quit"
   echo
 }
 
 assure_device() {
   if ! "$NATIVE_ADB" devices 2>/dev/null | grep -qE "^([0-9]|.*device)"; then
-    echo -e "${YELLOW}[!]${NC} Nenhum dispositivo conectado."
-    read -rp "Conectar primeiro? (1=wireless, 2=localhost, Enter=continuar) " A
+    echo -e "${YELLOW}[!]${NC} No device connected."
+    read -rp "Connect first? (1=wireless, 2=localhost, Enter=continue) " A
     case "$A" in
       1) adbw ;;
       2) adblocalhost ;;
-      *) echo "Continuando..." ;;
+      *) echo "Continuing..." ;;
     esac
   fi
 }
@@ -57,7 +57,7 @@ assure_device() {
 loop() {
   while :; do
     menu
-    read -rp "Opção: " OP
+    read -rp "Option: " OP
     case "$OP" in
       1) adbw ;;
       2) adblocalhost ;;
@@ -66,13 +66,13 @@ loop() {
       5) assure_device; adb shell ;;
       6) assure_device; scrcpy ;;
       7) assure_device; ADBash.sh ;;
-      8) read -rp 'Caminho do APK: ' figu; adb install "$figu" ;;
-      9) read -rp 'Arquivo no aparelho: ' origem; adb pull "$origem" ;;
-     10) read -rp 'Arquivo local: ' origem; adb push "$origem" /sdcard/ ;;
+      8) read -rp 'APK path: ' apk; adb install "$apk" ;;
+      9) read -rp 'File on device: ' remote; adb pull "$remote" ;;
+     10) read -rp 'Local file: ' local; adb push "$local" /sdcard/ ;;
      11) adbs ;;
      12) adbpair ;;
-     q|Q) echo -e "${GREEN}Encerrado.${NC}"; exit 0 ;;
-      *) echo -e "${RED}Opção inválida.${NC}" ;;
+     q|Q) echo -e "${GREEN}Finished.${NC}"; exit 0 ;;
+      *) echo -e "${RED}Invalid option.${NC}" ;;
     esac
   done
 }

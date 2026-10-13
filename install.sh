@@ -7,147 +7,152 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-info()  { echo -e "${GREEN}[*]${NC} $1"; }
-warn()  { echo -e "${YELLOW}[!]${NC} $1" >&2; }
-fail()  { echo -e "${RED}[✗]${NC} $1" >&2; exit 1; }
-step()  { echo -e "${BLUE}[>]${NC} $1"; }
+info() { echo -e "${GREEN}[*]${NC} $1"; }
+warn() { echo -e "${YELLOW}[!]${NC} $1" >&2; }
+fail() {
+	echo -e "${RED}[✗]${NC} $1" >&2
+	exit 1
+}
+step() { echo -e "${BLUE}[>]${NC} $1"; }
 
 VERSION="4.0.0"
 PKG_VERSION="0.2.3"
-RELEASE_URL="https://github.com/rianprei/termux-adb/releases/download/v${VERSION}"
-RAW_URL="https://raw.githubusercontent.com/rianprei/termux-adb/main"
 PREFIX="${PREFIX:-/data/data/com.termux/files/usr}"
+RELEASE_URL="https://github.com/GeneralKaos666/termux-adb/releases/download/v${VERSION}"
+RAW_URL="https://raw.githubusercontent.com/GeneralKaos666/termux-adb/main"
 
 declare -A DEB_SHA256
-DEB_SHA256[aarch64]="3f571ada3ea25671ab8a6d227c5f12f7e0412d8b62bf60e7948ae99a4c38c518"
-DEB_SHA256[arm]="faf1ec047fa69dbafc9550574bdf4c91bc7c12c5372684d6c5d9cbe384e861a0"
+DEB_SHA256[aarch64]="d1f2e59ea3a118114d55b5439931c93114831a0eabfcf3b2799e4c6c4ad5b847"
 
-# Scripts instalados no PATH (prefixo .sh removido)
+# Scripts installed on PATH (the .sh prefix is removed)
 EXTRA_SCRIPTS="wireless-adb termux-adb-doctor termux-adb-update adbotg adbpair adbw adbw-root-porta adbw-sweep adb-keys-backup adblocalhost adbs adbmenu"
-# Scripts instalados em $HOME/.local/bin (front-ends do adb unificado)
+# Scripts installed in $HOME/.local/bin (front-ends of the unified adb)
 LOCALBIN_SCRIPTS="adb fastboot adb-otg-watcher"
 
 echo
-info "Termux ADB Unificado — instalador v${VERSION}"
+info "Termux ADB Unified — installer v${VERSION}"
 echo
 
-# 1. Verificação de arquitetura
-step "Verificando arquitetura..."
+# 1. Architecture check
+step "Checking architecture..."
 ARCH="$(uname -m)"
 case "$ARCH" in
-  aarch64) DEB_ARCH="aarch64" ;;
-  armv7l|armv8l|arm) DEB_ARCH="arm" ;;
-  *)
-    fail "Arquitetura '$ARCH' não suportada. Suportadas: aarch64, arm (armv7l/armv8l)"
-    ;;
+aarch64) DEB_ARCH="aarch64" ;;
+armv7l | armv8l | arm)
+	fail "Architecture '$ARCH' is not supported yet: only aarch64 (64-bit ARM) builds are provided. 32-bit ARM (arm/armv7l) packages are not currently published."
+	;;
+*)
+	fail "Architecture '$ARCH' is not supported. Supported: aarch64"
+	;;
 esac
-info "Arquitetura: $ARCH → pacote $DEB_ARCH"
+info "Architecture: $ARCH → package $DEB_ARCH"
 
-# 2. Dependências base
-step "Instalando dependências base..."
+# 2. Base dependencies
+step "Installing base dependencies..."
 apt-get update -qq
-apt-get --assume-yes install wget > /dev/null
+apt-get --assume-yes install wget >/dev/null
 
 # 3. termux-api
-step "Verificando termux-api..."
+step "Checking termux-api..."
 if ! command -v termux-usb >/dev/null 2>&1; then
-  warn "termux-usb não encontrado. Instalando termux-api..."
-  apt-get --assume-yes install termux-api > /dev/null
-  info "termux-api instalado. Instale também o app Termux:API (F-Droid) se ainda não instalou."
+	warn "termux-usb not found. Installing termux-api..."
+	apt-get --assume-yes install termux-api >/dev/null
+	info "termux-api installed. Also install the Termux:API app (F-Droid) if you haven't already."
 else
-  info "termux-api presente"
+	info "termux-api present"
 fi
 
-# 4. Baixar e instalar o pacote .deb (distribuição própria, sem repo externo)
+# 4. Download and install the .deb directly from our repo (no external repo dependency)
 DEB_FILE="termux-adb_${PKG_VERSION}_${DEB_ARCH}.deb"
 DEB_TMP="$(mktemp)"
 EXPECTED_SHA="${DEB_SHA256[$DEB_ARCH]}"
 
-step "Baixando $DEB_FILE..."
+step "Downloading $DEB_FILE..."
 if ! wget -qO "$DEB_TMP" --timeout=30 "${RELEASE_URL}/${DEB_FILE}" 2>/dev/null; then
-  rm -f "$DEB_TMP"
-  fail "Falha ao baixar $DEB_FILE. Verifique a conexão ou abra uma issue em github.com/rianprei/termux-adb"
+	rm -f "$DEB_TMP"
+	fail "Failed to download $DEB_FILE. Check your connection or open an issue at github.com/GeneralKaos666/termux-adb"
 fi
 
-step "Verificando integridade (SHA256)..."
+step "Verifying integrity (SHA256)..."
 ACTUAL_SHA="$(sha256sum "$DEB_TMP" | cut -d' ' -f1)"
 if [ "$ACTUAL_SHA" != "$EXPECTED_SHA" ]; then
-  rm -f "$DEB_TMP"
-  fail "SHA256 não confere! Esperado: $EXPECTED_SHA / Recebido: $ACTUAL_SHA. Possível corrupção. Abra uma issue em github.com/rianprei/termux-adb"
+	rm -f "$DEB_TMP"
+	fail "SHA256 mismatch! Expected: $EXPECTED_SHA / Got: $ACTUAL_SHA. Possible corruption. Open an issue at github.com/GeneralKaos666/termux-adb"
 fi
-info "Integridade verificada"
+info "Integrity verified"
 
-step "Instalando termux-adb..."
-dpkg -i "$DEB_TMP" 2>/dev/null || apt-get --assume-yes -f install > /dev/null
+step "Installing termux-adb..."
+dpkg -i "$DEB_TMP" 2>/dev/null || apt-get --assume-yes -f install >/dev/null
 rm -f "$DEB_TMP"
 
-# 5. Isolar dados do adb
-step "Isolando dados do adb..."
+# 5. Isolate adb data
+step "Isolating adb data..."
 mkdir -p "$HOME/.termux-adb"
 for RC in "$HOME/.bashrc" "$HOME/.zshrc"; do
-  [ -f "$RC" ] || continue
-  grep -q 'ANDROID_USER_HOME=.*\.termux-adb' "$RC" 2>/dev/null && continue
-  sed -i '/ANDROID_SDK_HOME=.*\.termux-adb/d' "$RC"
-  echo 'export ANDROID_USER_HOME="$HOME/.termux-adb"' >> "$RC"
-  echo 'export ANDROID_SDK_HOME="$HOME/.termux-adb"' >> "$RC"
+	[ -f "$RC" ] || continue
+	grep -q 'ANDROID_USER_HOME=.*\.termux-adb' "$RC" 2>/dev/null && continue
+	sed -i '/ANDROID_SDK_HOME=.*\.termux-adb/d' "$RC"
+	echo 'export ANDROID_USER_HOME="$HOME/.termux-adb"' >>"$RC"
+	echo 'export ANDROID_SDK_HOME="$HOME/.termux-adb"' >>"$RC"
 done
 export ANDROID_USER_HOME="$HOME/.termux-adb"
 export ANDROID_SDK_HOME="$HOME/.termux-adb"
-info "Dados do adb isolados em ~/.termux-adb"
+info "adb data isolated in ~/.termux-adb"
 
-# 6. Ferramentas extras no PATH ($PREFIX/bin)
-step "Instalando ferramentas extras..."
+# 6. Extra tools on PATH ($PREFIX/bin)
+step "Installing extra tools..."
 for SCRIPT in $EXTRA_SCRIPTS; do
-  if wget -qO "$PREFIX/bin/$SCRIPT" --timeout=10 "${RAW_URL}/${SCRIPT}.sh" 2>/dev/null; then
-    chmod +x "$PREFIX/bin/$SCRIPT"
-    info "$SCRIPT instalado"
-  else
-    warn "Falha ao baixar $SCRIPT (não crítico)"
-  fi
+	if wget -qO "$PREFIX/bin/$SCRIPT" --timeout=10 "${RAW_URL}/${SCRIPT}.sh" 2>/dev/null; then
+		chmod +x "$PREFIX/bin/$SCRIPT"
+		info "$SCRIPT installed"
+	else
+		warn "Failed to download $SCRIPT (non-critical)"
+	fi
 done
 
-# 7. Front-ends do adb unificado em $HOME/.local/bin
-#    (ficam antes de $PREFIX/bin no PATH e roteiam OTG/wireless)
-step "Instalando front-ends unificados..."
+# 7. Unified front-ends in $HOME/.local/bin
+#    (take precedence over $PREFIX/bin in PATH and route OTG/wireless)
+step "Installing unified front-ends..."
 mkdir -p "$HOME/.local/bin"
 for SCRIPT in $LOCALBIN_SCRIPTS; do
-  if wget -qO "$HOME/.local/bin/$SCRIPT" --timeout=10 "${RAW_URL}/${SCRIPT}.sh" 2>/dev/null; then
-    chmod +x "$HOME/.local/bin/$SCRIPT"
-    info "$SCRIPT instalado"
-  else
-    warn "Falha ao baixar $SCRIPT (não crítico)"
-  fi
+	if wget -qO "$HOME/.local/bin/$SCRIPT" --timeout=10 "${RAW_URL}/${SCRIPT}.sh" 2>/dev/null; then
+		chmod +x "$HOME/.local/bin/$SCRIPT"
+		info "$SCRIPT installed"
+	else
+		warn "Failed to download $SCRIPT (non-critical)"
+	fi
 done
 
-# Garante $HOME/.local/bin no PATH
+# Ensure $HOME/.local/bin is on PATH
 case ":$PATH:" in
-  *":$HOME/.local/bin:"*) ;;
-  *) export PATH="$HOME/.local/bin:$PATH"
-     for RC in "$HOME/.bashrc" "$HOME/.zshrc"; do
-       [ -f "$RC" ] || continue
-       grep -q '\.local/bin' "$RC" 2>/dev/null && continue
-       echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$RC"
-     done
-     ;;
+*":$HOME/.local/bin:"*) ;;
+*)
+	export PATH="$HOME/.local/bin:$PATH"
+	for RC in "$HOME/.bashrc" "$HOME/.zshrc"; do
+		[ -f "$RC" ] || continue
+		grep -q '\.local/bin' "$RC" 2>/dev/null && continue
+		echo 'export PATH="$HOME/.local/bin:$PATH"' >>"$RC"
+	done
+	;;
 esac
 
 # 8. Health-check
-step "Verificando instalação..."
+step "Verifying installation..."
 echo
 if ADB_VER="$(termux-adb version 2>/dev/null | head -1)"; then
-  info "termux-adb OK: $ADB_VER"
+	info "termux-adb OK: $ADB_VER"
 else
-  warn "termux-adb instalado, mas 'termux-adb version' falhou. Execute 'termux-adb-doctor' para diagnosticar."
+	warn "termux-adb installed but 'termux-adb version' failed. Run 'termux-adb-doctor' to diagnose."
 fi
 
 if FB_VER="$(termux-fastboot --version 2>/dev/null | head -1)"; then
-  info "termux-fastboot OK: $FB_VER"
+	info "termux-fastboot OK: $FB_VER"
 else
-  warn "termux-fastboot não respondeu (pode não estar disponível nesta versão)"
+	warn "termux-fastboot did not respond (may not be available in this version)"
 fi
 
 echo
-info "Instalação concluída!"
-info "Comandos: adb, fastboot, adbw (--watch), adbw-root-porta, adbw-sweep, adb-keys-backup, adbmenu, adbs, adbpair, adbotg, adblocalhost, wireless-adb, termux-adb-doctor, termux-adb-update"
-info "Distribuição própria — binários hospedados no nosso repositório."
+info "Installation complete!"
+info "Commands: adb, fastboot, adbw (--watch), adbw-root-porta, adbw-sweep, adb-keys-backup, adbmenu, adbs, adbpair, adbotg, adblocalhost, wireless-adb, termux-adb-doctor, termux-adb-update"
+info "Self-contained distribution — binaries hosted in our repo."
 echo
