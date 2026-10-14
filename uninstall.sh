@@ -6,13 +6,13 @@ RED='\033[0;31m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-info()  { echo -e "${GREEN}[*]${NC} $1"; }
-step()  { echo -e "${BLUE}[>]${NC} $1"; }
+info() { echo -e "${GREEN}[*]${NC} $1"; }
+step() { echo -e "${BLUE}[>]${NC} $1"; }
 
 PREFIX="${PREFIX:-/data/data/com.termux/files/usr}"
 
 echo
-info "Termux ADB Unified — uninstaller v4.0.0"
+info "Termux ADB Unified — uninstaller v4.1.0"
 echo
 
 step "Removing termux-adb package..."
@@ -42,9 +42,9 @@ rm -f "$PREFIX/bin/fastboot.sh"
 
 step "Cleaning shell RC config..."
 for RC in "$HOME/.bashrc" "$HOME/.zshrc"; do
-  [ -f "$RC" ] || continue
-  sed -i '/ANDROID_USER_HOME=.*\.termux-adb/d' "$RC"
-  sed -i '/ANDROID_SDK_HOME=.*\.termux-adb/d' "$RC"
+	[ -f "$RC" ] || continue
+	sed -i '/ANDROID_USER_HOME=.*\.termux-adb/d' "$RC"
+	sed -i '/ANDROID_SDK_HOME=.*\.termux-adb/d' "$RC"
 done
 
 step "Removing isolated data..."
@@ -52,8 +52,8 @@ rm -rf "$HOME/.termux-adb"
 
 echo
 if command -v termux-adb >/dev/null 2>&1 && [ ! -f "$HOME/.local/bin/adb" ]; then
-  echo -e "${RED}[!]${NC} termux-adb is still on PATH — removal may have partially failed"
+	echo -e "${RED}[!]${NC} termux-adb is still on PATH — removal may have partially failed"
 else
-  info "termux-adb and associated tools removed"
+	info "termux-adb and associated tools removed"
 fi
 echo

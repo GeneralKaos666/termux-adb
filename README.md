@@ -184,7 +184,7 @@ The `adb-otg-watcher` queries `termux-usb -l` in the background (single instance
 
 ## Comparison
 
-| Feature | nohajc | MasterDevX | rendiix | **This (v4.0.0)** |
+| Feature | nohajc | MasterDevX | rendiix | **This (v4.1.0)** |
 |---------|:------:|:----------:|:-------:|:------------------:|
 | No root | ✅ | ❌ | ❌ | ✅ |
 | OTG via termux-usb | ✅ | ❌ | ❌ | ✅ |

@@ -18,7 +18,7 @@ warn() { echo -e "  ${YELLOW}!${NC} $1"; }
 ISSUES=0
 
 echo
-echo "termux-adb doctor v4.0.0"
+echo "termux-adb doctor v4.1.0"
 echo "========================"
 echo
 
