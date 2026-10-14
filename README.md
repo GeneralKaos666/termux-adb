@@ -2,7 +2,7 @@
 
 ADB and Fastboot on Termux **without root** and **without unlocking the bootloader**.
 
-[![version-4.0.0](https://img.shields.io/badge/version-4.0.0-blue)](https://github.com/GeneralKaos666/termux-adb/releases/tag/v4.0.0)
+[![version-4.1.0](https://img.shields.io/badge/version-4.1.0-blue)](https://github.com/GeneralKaos666/termux-adb/releases/tag/v4.1.0)
 [![license-MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 This project integrates the main implementations of the Termux ADB ecosystem — USB OTG via `termux-usb`, wireless (Android 11+), localhost and screen mirroring via scrcpy — into a **single unified command interface** with automatic backend routing.

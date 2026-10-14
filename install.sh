@@ -15,7 +15,7 @@ fail() {
 }
 step() { echo -e "${BLUE}[>]${NC} $1"; }
 
-VERSION="4.0.0"
+VERSION="4.1.0"
 PKG_VERSION="0.2.3"
 PREFIX="${PREFIX:-/data/data/com.termux/files/usr}"
 RELEASE_URL="https://github.com/GeneralKaos666/termux-adb/releases/download/v${VERSION}"
